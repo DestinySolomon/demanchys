@@ -43,7 +43,7 @@
     />
 
     <!-- CUSTOM CSS -->
-    <link rel="stylesheet" href="./assets/style.css" />
+    <link rel="stylesheet" href="{{ asset('assets/style.css') }}" />
   </head>
   <body>
     <!-- Navbar -->
@@ -882,9 +882,34 @@
         </div>
       </div>
     </footer>
+    
+    <!-- AUTH MODAL -->
+    <div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-3 rounded-4">
+
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Welcome to De Manchys Lounge</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body text-center px-4">
+                    <p class="text-light mb-4">
+                        We're excited to have you here!  
+                        Login or create an account to enjoy a personalized experience.
+                    </p>
+
+                    <a href="/login" class="btn btn-warning w-100 mb-3 fw-semibold">Login</a>
+                    <a href="/register" class="btn btn-outline-light w-100 fw-semibold">Create an Account</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="./assets/script.js"></script>
+    <script src="{{ asset('assets/script.js') }}"></script>
   </body>
 </html>
