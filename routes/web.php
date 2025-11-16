@@ -34,5 +34,7 @@ Route::post('/contact/send', [ContactController::class, 'send'])->name('contact.
 // Gallery
 
 // Admin Routes
+
+
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
-Route::post('/admin/gallery/upload', [GalleryController::class, 'store'])->name('gallery.upload');
+Route::post('/gallery/upload', [GalleryController::class, 'store'])->name('gallery.upload');
