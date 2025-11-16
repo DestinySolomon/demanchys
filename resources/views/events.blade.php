@@ -2,102 +2,99 @@
 
 @section('content')
 
-<!-- HERO / BANNER -->
+<!-- EVENTS HERO -->
 <section class="events-hero d-flex align-items-center text-center text-light"
-         style="background: url({{ asset('assets/events_header.jpg') }}) center/cover no-repeat; height: 60vh;">
-    <div class="w-100 bg-dark bg-opacity-50 py-5">
-        <h1 class="display-4 fw-bold">Upcoming Events</h1>
-        <p class="lead mt-3 mx-auto" style="max-width: 650px;">
-            Discover unforgettable nights at De Manchys Lounge - from live music and themed parties to exclusive VIP gatherings.
+    style="background: url('{{ asset('assets/lounge_events.jpg') }}') center/cover no-repeat; height: 50vh;">
+    <div class="container">
+        <h1 class="display-4 fw-bold text-warning">Upcoming & Past Events</h1>
+        <p class="lead mt-3">
+            Explore our curated lineup of premium entertainment — concerts, comedy nights, karaoke sessions, parties & more.
         </p>
     </div>
 </section>
 
+<!-- FILTERS -->
+<section class="py-4 bg-light">
+    <div class="container">
+        <form method="GET" action="{{ route('events.index') }}" class="row g-3 justify-content-center">
 
-<!-- EVENTS SECTION -->
-<section class="py-5 bg-light">
+            <div class="col-md-4">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    <option value="Concert" {{ request('category')=='Concert' ? 'selected' : '' }}>Concert</option>
+                    <option value="Comedy" {{ request('category')=='Comedy' ? 'selected' : '' }}>Comedy</option>
+                    <option value="Karaoke" {{ request('category')=='Karaoke' ? 'selected' : '' }}>Karaoke</option>
+                    <option value="Party" {{ request('category')=='Party' ? 'selected' : '' }}>Party</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="Upcoming" {{ request('status')=='Upcoming' ? 'selected' : '' }}>Upcoming</option>
+                    <option value="Past" {{ request('status')=='Past' ? 'selected' : '' }}>Past</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <button class="btn btn-warning w-100 fw-bold">Filter</button>
+            </div>
+
+        </form>
+    </div>
+</section>
+
+<!-- EVENTS LIST -->
+<section class="py-5">
     <div class="container">
 
-        <h2 class="fw-bold text-center mb-4 text-dark">Experience the Vibes</h2>
-        <p class="text-center text-warning mb-5">
-            Explore our curated lineup of premium events crafted just for you.
-        </p>
+        <div class="row gy-5">
 
-        <div class="row g-4">
+            @forelse ($events as $event)
+            <div class="col-md-4">
+                <div class="card shadow rounded-4 overflow-hidden">
 
-            <!-- EVENT CARD 1 -->
-            <div class="col-lg-4 col-md-6">
-                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
-                    <img src="{{ asset('assets/event1.jpg') }}" class="card-img-top" alt="Event Image">
+                    <img src="{{ asset('storage/' . $event->image) }}"
+                        class="card-img-top" height="220" style="object-fit: cover" alt="{{ $event->title }}">
 
-                    <div class="card-body p-4">
-                        <span class="badge bg-warning text-dark mb-2 fw-semibold">Friday • 9PM</span>
+                    <div class="card-body">
 
-                        <h5 class="fw-bold">Live Music Night</h5>
-                        <p class="text-muted small mt-2">
-                            Enjoy soulful live performances by top artists, great food, and premium drinks all in one unforgettable evening.
+                        <span class="badge bg-warning text-dark mb-2">{{ $event->category }}</span>
+
+                        <h5 class="fw-bold text-dark">{{ $event->title }}</h5>
+
+                        <p class="small text-muted mb-2">
+                            {!! Str::limit($event->description, 120) !!}
                         </p>
 
-                        <a href="#" class="btn btn-orange w-100 mt-3">Reserve a Spot</a>
+                        <p class="small fw-semibold text-dark">
+                            <i class="bi bi-calendar-event"></i>
+                            {{ \Carbon\Carbon::parse($event->event_date)->format('M d, Y') }}
+                        </p>
+
+                        <span
+                            class="badge {{ $event->status == 'Upcoming' ? 'bg-success' : 'bg-secondary' }}">
+                            {{ $event->status }}
+                        </span>
+
                     </div>
                 </div>
             </div>
+            @empty
 
-            <!-- EVENT CARD 2 -->
-            <div class="col-lg-4 col-md-6">
-                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
-                    <img src="{{ asset('assets/event2.jpg') }}" class="card-img-top" alt="Event Image">
-
-                    <div class="card-body p-4">
-                        <span class="badge bg-warning text-dark mb-2 fw-semibold">Saturday • 8PM</span>
-
-                        <h5 class="fw-bold">Classic African Night</h5>
-                        <p class="text-muted small mt-2">
-                            A taste of culture -smooth rhythms, drums, dances, and the rich African vibes you love.
-                        </p>
-
-                        <a href="#" class="btn btn-orange w-100 mt-3">Book Your Seat</a>
-                    </div>
-                </div>
+            <div class="col-12 text-center py-5">
+                <h5 class="text-muted">No events available.</h5>
             </div>
 
-            <!-- EVENT CARD 3 -->
-            <div class="col-lg-4 col-md-6">
-                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
-                    <img src="{{ asset('assets/event3.jpg') }}" class="card-img-top" alt="Event Image">
-
-                    <div class="card-body p-4">
-                        <span class="badge bg-warning text-dark mb-2 fw-semibold">Sunday • 7PM</span>
-
-                        <h5 class="fw-bold">Wine & Chill Evening</h5>
-                        <p class="text-muted small mt-2">
-                            Relax with fine wines, cozy ambiance, exquisite meals, and an atmosphere perfect for unwinding.
-                        </p>
-
-                        <a href="#" class="btn btn-orange w-100 mt-3">Join the Experience</a>
-                    </div>
-                </div>
-            </div>
+            @endforelse
 
         </div>
-    </div>
-</section>
 
-
-<!-- VIP HIGHLIGHT BANNER -->
-<section class="py-5 text-light"
-         style="background: url({{ asset('assets/vip_banner.jpg') }}) center/cover no-repeat;">
-    <div class="bg-dark bg-opacity-50 py-5">
-        <div class="container text-center">
-            <h2 class="fw-bold display-6">Host Your Private Events</h2>
-            <p class="mt-3 mx-auto" style="max-width: 700px;">
-                From corporate meetings to birthday celebrations and exclusive VIP hangouts,  
-                our lounge is designed to deliver premium comfort and unforgettable luxury.
-            </p>
-            <a href="#" class="btn btn-warning text-dark px-4 py-2 mt-3 fw-semibold">Book a Private Hall</a>
+        <div class="mt-4">
+            {{ $events->links() }}
         </div>
+
     </div>
 </section>
-
 
 @endsection

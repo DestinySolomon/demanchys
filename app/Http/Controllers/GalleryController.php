@@ -7,6 +7,7 @@ use App\Models\GalleryImage;
 
 class GalleryController extends Controller
 {
+    // Show gallery with pagination + filtering
     public function index(Request $request)
     {
         $category = $request->get('category');
@@ -22,11 +23,11 @@ class GalleryController extends Controller
         return view('gallery', compact('images', 'category'));
     }
 
-
+    // Upload image
     public function store(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpg,png,jpeg,webp|max:2048',
+            'image'    => 'required|image|mimes:jpg,png,jpeg,webp|max:2048',
             'category' => 'required|string',
         ]);
 
@@ -34,7 +35,7 @@ class GalleryController extends Controller
 
         GalleryImage::create([
             'image_path' => $path,
-            'category' => $request->category
+            'category'   => $request->category,
         ]);
 
         return back()->with('success', 'Image uploaded successfully.');
