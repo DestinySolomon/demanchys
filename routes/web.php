@@ -26,4 +26,12 @@ Route::get('/events', [EventsController::class, 'index'])->name('events');
 // CONTACT
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 
+Route::post('/contact/send', [ContactController::class, 'send'])->name('contact.send');
 
+// Gallery
+Route::get('/gallery', [App\Http\Controllers\GalleryController::class, 'index'])->name('gallery');
+
+// Admin Routes
+
+Route::get('/admin/gallery', [GalleryAdminController::class, 'index'])->name('admin.gallery');
+Route::post('/admin/gallery/upload', [GalleryAdminController::class, 'upload'])->name('admin.gallery.upload');

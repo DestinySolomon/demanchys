@@ -71,12 +71,12 @@
     <div class="modal-content p-3 rounded-4">
       <div class="modal-header border-0">
         <h5 class="modal-title">Welcome to De Manchys Lounge</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
+        <button class=" btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body text-center">
-        <p class="text-muted">Login or create an account to enjoy a personalized experience.</p>
+        <p class="text-white-50">Login or create an account to enjoy a personalized experience.</p>
         <a href="{{ url('/login') }}" class="btn btn-warning w-100 mb-2">Login</a>
-        <a href="{{ url('/register') }}" class="btn btn-outline-dark w-100">Create Account</a>
+        <a href="{{ url('/register') }}" class="btn btn-outline-warning w-100">Create Account</a>
       </div>
     </div>
   </div>

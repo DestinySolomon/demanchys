@@ -478,4 +478,8 @@ body {
       .menu-header { padding: 36px 12px 20px; }
     }
 
+    /* Contact page */
+    textarea {
+  resize: none;
+}
  
