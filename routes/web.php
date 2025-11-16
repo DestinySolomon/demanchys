@@ -7,6 +7,9 @@ use App\Http\Controllers\AboutController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\EventsController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\GalleryController;
+
+
 
 Route::get('/home', [HomeController::class, 'home'])->name('home');
 
@@ -29,9 +32,7 @@ Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact/send', [ContactController::class, 'send'])->name('contact.send');
 
 // Gallery
-Route::get('/gallery', [App\Http\Controllers\GalleryController::class, 'index'])->name('gallery');
 
 // Admin Routes
-
-Route::get('/admin/gallery', [GalleryAdminController::class, 'index'])->name('admin.gallery');
-Route::post('/admin/gallery/upload', [GalleryAdminController::class, 'upload'])->name('admin.gallery.upload');
+Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
+Route::post('/admin/gallery/upload', [GalleryController::class, 'store'])->name('gallery.upload');
