@@ -5,7 +5,7 @@
 <section class="py-5 bg-light">
     <div class="container">
 
-        <h1 class="fw-bold mb-4 text-center">Upcoming Events</h1>
+        <h1 class="fw-bold mb-4 text-center text-warning">Upcoming Events</h1>
 
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>

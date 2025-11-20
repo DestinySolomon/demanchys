@@ -145,13 +145,13 @@
 <!-- 🔥 NEW GALLERY CTA SECTION -->
 <section class="py-5">
     <div class="container text-center">
-        <h2 class="fw-bold text-dark mb-3">Explore Our Gallery</h2>
-        <p class="text-muted mb-4">
+        <h2 class="fw-bold text-white-50 mb-3">Explore Our Gallery</h2>
+        <p class="text-white-50 mb-4">
             Dive into a visual experience of our ambience, premium dishes, events, and unforgettable moments.
             Our gallery showcases the beauty, elegance, and vibrant lifestyle that defines De Manchys Lounge.
         </p>
 
-        <a href="{{ route('gallery') }}" class="btn btn-warning px-4 py-2 fw-semibold rounded-3">
+        <a href="{{ route('gallery.index') }}" class="btn btn-warning px-4 py-2 fw-semibold rounded-3">
             View Full Gallery
         </a>
     </div>

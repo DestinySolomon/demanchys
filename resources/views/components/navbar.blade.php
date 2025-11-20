@@ -1,37 +1,152 @@
-<!-- Navbar -->
-    <nav class="navbar navbar-expand-lg fixed-top ">
-      <div class="container-fluid">
-        <!-- ✅ Image logo -->
-        <a class="navbar-brand" href="{{ url('/') }}">
-          <img src="{{ asset('assets/logo.png') }}" alt="De Manchys Lounge Logo" height="50">
+<style>
+    /* Slide-in menu styles (MOBILE ONLY) */
+    #mobileSlideMenu {
+        position: fixed;
+        top: 0;
+        left: -260px;
+        width: 260px;
+        height: 100vh;
+        background: #111;
+        padding: 20px;
+        transition: left 0.3s ease-in-out;
+        z-index: 9999;
+    }
+
+    #mobileSlideMenu.show {
+        left: 0;
+    }
+
+    /* Background overlay */
+    #menuOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        z-index: 9998;
+    }
+
+    #menuOverlay.active {
+        display: block;
+    }
+</style>
+
+<!-- TOP NAVBAR (LOGO + USER ICON) -->
+<nav class="navbar fixed-top bg-dark py-2">
+    <div class="container-fluid d-flex align-items-center">
+
+        <!-- LOGO LEFT -->
+        <a class="navbar-brand d-flex align-items-center me-3" href="{{ url('/') }}">
+            <img src="{{ asset('assets/logo.png') }}" alt="De Manchys Lounge" height="50">
         </a>
 
-        <button
-          class="navbar-toggler bg-light"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          title="Toggle navigation menu"
-        >
-          <span class="navbar-toggler-icon"></span>
+        <!-- CENTER MENU (desktop only) -->
+        <div class="d-none d-lg-flex justify-content-center flex-grow-1">
+            <ul class="navbar-nav d-flex flex-row gap-3">
+                <li class="nav-item">
+                    <a class="nav-link text-white {{ request()->routeIs('home') ? 'active text-warning fw-bold' : '' }}"
+                       href="{{ route('home') }}">Home</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-white {{ request()->routeIs('about') ? 'active text-warning fw-bold' : '' }}"
+                       href="{{ route('about') }}">About</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-white {{ request()->routeIs('menu') ? 'active text-warning fw-bold' : '' }}"
+                       href="{{ route('menu') }}">Menu</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-white {{ request()->routeIs('events') ? 'active text-warning fw-bold' : '' }}"
+                       href="{{ route('events') }}">Events</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-white {{ request()->routeIs('contact') ? 'active text-warning fw-bold' : '' }}"
+                       href="{{ route('contact') }}">Contact</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- USER ICON RIGHT -->
+        <button class="btn btn-warning rounded-circle d-flex justify-content-center align-items-center ms-3"
+            style="width: 45px; height: 45px;"
+            data-bs-toggle="modal"
+            data-bs-target="#authModal">
+            <i class="bi bi-person fs-4"></i>
         </button>
 
-             <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-      <ul class="navbar-nav mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="{{ url('home') }}">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ route('about') }}">About</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ route('menu') }}">Menu</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ route('events') }}">Events</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ route('contact') }}">Contact</a></li>
-      </ul>
-     </div>
+    </div>
+</nav>
 
-           <!-- 🔵 REPLACED BOOK TABLE WITH USER ICON -->
-                    <button class="btn btn-warning rounded-circle d-flex justify-content-center align-items-center"
-                        style="width: 45px; height: 45px;"
-                        data-bs-toggle="modal"
-                        data-bs-target="#authModal">
-                        <i class="bi bi-person fs-4"></i>
-                    </button>
-      </div>
-    </nav>
+<!-- MOBILE HAMBURGER (ONLY on small screens) -->
+<div class="d-lg-none mt-5 pt-4 px-3">
+    <button id="hamburgerBtn"
+        class="btn btn-outline-light w-10 d-flex justify-content-between align-items-center">
+        <i class="bi bi-list fs-3"></i>
+    </button>
+</div>
+
+<!-- MOBILE SLIDE-IN MENU -->
+<div id="mobileSlideMenu">
+    <h5 class="text-white mb-4">Menu</h5>
+
+    <ul class="navbar-nav">
+        <li class="nav-item my-2">
+            <a class="nav-link text-white {{ request()->routeIs('home') ? 'text-warning fw-bold' : '' }}"
+               href="{{ route('home') }}">Home</a>
+        </li>
+
+        <li class="nav-item my-2">
+            <a class="nav-link text-white {{ request()->routeIs('about') ? 'text-warning fw-bold' : '' }}"
+               href="{{ route('about') }}">About</a>
+        </li>
+
+        <li class="nav-item my-2">
+            <a class="nav-link text-white {{ request()->routeIs('menu') ? 'text-warning fw-bold' : '' }}"
+               href="{{ route('menu') }}">Menu</a>
+        </li>
+
+        <li class="nav-item my-2">
+            <a class="nav-link text-white {{ request()->routeIs('events') ? 'text-warning fw-bold' : '' }}"
+               href="{{ route('events') }}">Events</a>
+        </li>
+
+        <li class="nav-item my-2">
+            <a class="nav-link text-white {{ request()->routeIs('contact') ? 'text-warning fw-bold' : '' }}"
+               href="{{ route('contact') }}">Contact</a>
+        </li>
+    </ul>
+</div>
+
+{{-- <!-- OVERLAY -->
+<div id="menuOverlay"></div> --}}
+
+<!-- (desktop menu integrated into fixed-top navbar above) -->
+
+<script>
+    const btn = document.getElementById('hamburgerBtn');
+    const menu = document.getElementById('mobileSlideMenu');
+    const overlay = document.getElementById('menuOverlay');
+
+    btn.addEventListener('click', () => {
+        menu.classList.toggle('show');
+        overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+        menu.classList.remove('show');
+        overlay.classList.remove('active');
+    });
+
+    document.querySelectorAll('#mobileSlideMenu a').forEach(link => {
+        link.addEventListener('click', () => {
+            menu.classList.remove('show');
+            overlay.classList.remove('active');
+        });
+    });
+</script>

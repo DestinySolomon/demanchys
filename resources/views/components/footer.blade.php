@@ -64,7 +64,7 @@
                 <div class="col-md-3">
                     <h6 class="fw-bold mb-3">Quick Links</h6>
                     <ul class="list-unstyled small">
-                        <li><a href="{{ url('/') }}">Home</a></li>
+                        <li><a href="{{ url('/home') }}">Home</a></li>
                         <li><a href="{{ url('/about') }}">About Us</a></li>
                         <li><a href="{{ url('/menu') }}">Menu</a></li>
                         <li><a href="{{ url('/events') }}">Events</a></li>
@@ -76,10 +76,11 @@
                 <div class="col-md-3">
                     <h6 class="fw-bold mb-3">Services</h6>
                     <ul class="list-unstyled small">
-                        <li><a href="{{ url('/reservation') }}">Table Reservations</a></li>
+                       <li><a href="{{ route('reservation') }}">Table Reservations</a></li>
+
                         <li><a href="{{ url('/private-events') }}">Private Events</a></li>
                         <li><a href="{{ url('/catering') }}">Catering</a></li>
-                        <li><a href="{{ url('/vip') }}">VIP Packages</a></li>
+                        <li><a href="{{ url('/vip-packages') }}">VIP Packages</a></li>
                         <li><a href="{{ url('/corporate-events') }}">Corporate Events</a></li>
                     </ul>
                 </div>

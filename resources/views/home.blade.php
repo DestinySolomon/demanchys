@@ -2,6 +2,20 @@
 
 @section('content')
 
+<!-- Gold Bubble Animation Layer -->
+<div id="gold-bubbles">
+    <div class="bubble bubble-1"></div>
+    <div class="bubble bubble-2"></div>
+    <div class="bubble bubble-3"></div>
+    <div class="bubble bubble-4"></div>
+    <div class="bubble bubble-5"></div>
+    <div class="bubble bubble-6"></div>
+    <div class="bubble bubble-7"></div>
+    <div class="bubble bubble-8"></div>
+    <div class="bubble bubble-9"></div>
+    <div class="bubble bubble-10"></div>
+</div>
+
 <!-- Hero Section -->
 <section class="hero d-flex">
   <div class="hero-content">
@@ -12,7 +26,8 @@
       trained staff.
     </p>
     <div class="d-flex justify-content-center gap-3 flex-wrap">
-      <a href="#" class="btn btn-orange px-4 py-2">Book Your Table</a>
+      <a href="{{ route('book.table') }}" class="btn btn-warning">Book Your Table</a>
+
       <a href="{{ url('menu') }}" class="btn btn-outline-light px-4 py-2">View Menu</a>
     </div>
   </div>
@@ -83,44 +98,64 @@
 
       <div class="col-lg-6 mb-4">
         <h2 class="fw-bold text-black mb-3">Why Choose De Manchys Lounge?</h2>
-        <p class="text-muted mb-3">
-          At De Manchys Lounge, we've created more than just a dining destination –
-          we've crafted an experience...
-        </p>
-        <p class="text-muted">
-          Whether you're looking for an intimate dinner, a night out with friends, or a special celebration…
-        </p>
+         <p class="text-muted mb-3">
+              At De Manchys Lounge, we've created more than just a dining
+              destination – we've crafted an experience. Our commitment to
+              excellence shines through every aspect of our service, from our
+              carefully curated menu featuring both local and international
+              cuisine to our world-class entertainment and unparalleled
+              hospitality.
+            </p>
+            <p class="text-muted">
+              Whether you're looking for an intimate dinner, a night out with
+              friends, or a special celebration, our luxurious atmosphere and
+              professional service ensure every visit is memorable.
+            </p>
       </div>
 
       <div class="col-lg-6">
+
+        {{-- Card 1 --}}
 
         <div class="d-flex align-items-start bg-light p-4 rounded-4 shadow-sm mb-3">
           <div class="icon bg-warning text-white rounded-circle me-3 icon-circle">
             <i class="bi bi-music-note-beamed fs-1"></i>
           </div>
           <div>
-            <h5 class="fw-semibold">Best DJs in Town</h5>
-            <p class="text-muted">Experience electrifying performances...</p>
+            <h5 class="fw-semibold text-muted">Best DJs in Town</h5>
+                <p class="mb-0 text-muted">
+                  Experience electrifying performances from top-tier DJs who
+                  know how to keep the energy flowing all night long.
+                </p>
           </div>
         </div>
-
+          
+        {{-- Card 2 --}}
         <div class="d-flex align-items-start bg-light p-4 rounded-4 shadow-sm mb-3">
           <div class="icon bg-warning text-white rounded-circle me-3 icon-circle">
             <i class="bi bi-shield-lock fs-1"></i>
           </div>
           <div>
-            <h5 class="fw-semibold">State-of-the-Art Security</h5>
-            <p class="text-muted">Your safety is our priority...</p>
+            <h5 class="fw-semibold text-muted">State-of-the-Art Security</h5>
+                <p class="mb-0 text-muted">
+                  Your safety is our priority. Our advanced security systems and
+                  trained personnel ensure a secure environment.
+                </p>
           </div>
         </div>
 
+
+        {{-- Card 3 --}}
         <div class="d-flex align-items-start bg-light p-4 rounded-4 shadow-sm">
           <div class="icon bg-warning text-white rounded-circle me-3 icon-circle">
             <i class="bi bi-person-check fs-1"></i>
           </div>
           <div>
-            <h5 class="fw-semibold">Professional Staff</h5>
-            <p class="text-muted">Our well-trained team delivers exceptional service...</p>
+           <h5 class="fw-semibold text-muted">Professional Staff</h5>
+                <p class="mb-0 text-muted">
+                  Our well-trained team delivers exceptional service with
+                  attention to detail that exceeds expectations.
+                </p>
           </div>
         </div>
 
@@ -133,9 +168,14 @@
 <!-- Menu Section -->
 <section class="py-5 bg-light">
   <div class="container">
+    {{-- section tittle --}}
     <div class="text-center mb-4">
-      <h2 class="fw-bold text-black">Our Exquisite Menu</h2>
-      <p class="text-muted">Discover a culinary journey...</p>
+       <h2 class="fw-bold text-black">Our Exquisite Menu</h2>
+          <p class="text-muted">
+            Discover a culinary journey that spans continents, featuring the
+            finest local delicacies <br />
+            and international favorites, all prepared by our expert chefs.
+          </p>
     </div>
 
     <div class="d-flex justify-content-center mb-5">
@@ -145,7 +185,7 @@
             <i class="fa-solid fa-utensils"></i>
           </div>
           <h6 class="fw-bold">Dine In</h6>
-          <small class="text-muted">Experience luxury</small>
+          <small class="text-muted">Experience luxury in our lounge</small>
         </div>
 
         <div class="fw-bold text-muted">or</div>
@@ -155,41 +195,52 @@
             <i class="bi bi-truck fs-4"></i>
           </div>
           <h6 class="fw-bold">Delivery</h6>
-          <small class="text-muted">Enjoy at home</small>
+          <small class="text-muted">Enjoy our food at your doorstep</small>
         </div>
       </div>
     </div>
 
-    <div class="row g-4">
 
+    {{-- Menu Cards --}}
+    <div class="row g-4">
+   {{-- Card 1 --}}
       <div class="col-md-4">
         <div class="card h-100 shadow-sm border-0">
           <img src="{{ asset('assets/afang.jpg') }}" class="card-img-top" alt="">
           <div class="card-body d-flex flex-column">
             <h5 class="fw-bold">Local & International Cuisine</h5>
-            <p class="text-muted small">Savor authentic specialties…</p>
+                <p class="text-muted small">
+                  Savor authentic Nigerian specialties alongside carefully
+                  crafted international dishes. Each story begins with flavor.
+                </p>
             <a href="{{ url('menu') }}" class="btn btn-warning w-100 mt-auto">Order Now</a>
           </div>
         </div>
       </div>
-
+        {{-- Card 2 --}}
       <div class="col-md-4">
         <div class="card h-100 shadow-sm border-0">
           <img src="{{ asset('assets/drinks.jpg') }}" class="card-img-top" alt="">
           <div class="card-body d-flex flex-column">
-            <h5 class="fw-bold">Premium Drinks</h5>
-            <p class="text-muted small">Refreshing stories...</p>
+             <h5 class="fw-bold">Premium Drinks & Beverages</h5>
+                <p class="text-muted small">
+                  From cocktails to fine wines, our drink selection brings
+                  refreshing stories to every meal.
+                </p>
             <a href="#" class="btn btn-warning w-100 mt-auto">Order Now</a>
           </div>
         </div>
       </div>
-
+         {{-- Card 3 --}}
       <div class="col-md-4">
         <div class="card h-100 shadow-sm border-0">
           <img src="{{ asset('assets/grilled_meat.jpg') }}" class="card-img-top" alt="">
           <div class="card-body d-flex flex-column">
-            <h5 class="fw-bold">Grilled Specialties</h5>
-            <p class="text-muted small">Expertly grilled meats...</p>
+            <h5 class="fw-bold">Grilled Specialties & Snacks</h5>
+                <p class="text-muted small">
+                  Enjoy expertly grilled meats, fish, and traditional
+                  snacks—rich in flavor and perfectly prepared.
+                </p>
             <a href="#" class="btn btn-warning w-100 mt-auto">Order Now</a>
           </div>
         </div>
@@ -205,8 +256,13 @@
   <div class="container">
 
     <div class="text-center mb-4">
-      <h2 class="fw-bold text-black">Events & Entertainment</h2>
-      <p class="text-muted">Experience unforgettable nights…</p>
+        <h2 class="fw-bold text-black">Events & Entertainment</h2>
+          <p class="text-muted">
+            Experience unforgettable nights with our world-class entertainment
+            and exclusive <br />
+            events. From DJ nights to private celebrations, we make every moment
+            special.
+          </p>
     </div>
 
     <div class="row align-items-center g-4">
@@ -219,7 +275,7 @@
           <div class="bg-white p-3 mb-3 rounded shadow-sm d-flex justify-content-between">
             <div>
               <h6 class="fw-bold text-muted">Friday Night Live</h6>
-              <small class="text-muted">DJ Marcus</small>
+              <small class="text-muted">DJ Marcus and live band</small>
             </div>
             <div class="text-end">
               <div class="fw-bold text-warning">Nov 14</div>
@@ -238,6 +294,22 @@
             </div>
           </div>
 
+              <!-- Event Item -->
+              <div
+                class="d-flex justify-content-between align-items-center bg-white p-3 mb-3 rounded shadow-sm"
+              >
+                <div>
+                  <h6 class="fw-bold mb-1 text-muted">Wine Tasting Night</h6>
+                  <small class="text-muted">Premium Wine Selection</small>
+                </div>
+                <div class="text-end">
+                  <div class="fw-bold text-warning">Nov 22</div>
+                  <small class="text-muted">7:00 PM</small>
+                </div>
+              </div>
+
+
+          {{-- View All Events Button --}}
           <a href="{{ url('events') }}" class="btn btn-warning w-100 fw-bold">View All Events</a>
 
         </div>
@@ -257,7 +329,7 @@
             <i class="bi bi-calendar-event fs-4"></i>
           </div>
           <h6 class="fw-bold text-black">Private Events</h6>
-          <p class="text-muted small">Host your occasions with us</p>
+          <p class="text-muted small">Host your special occasions with us</p>
         </div>
       </div>
 
@@ -267,7 +339,7 @@
             <i class="bi bi-mic-fill fs-4"></i>
           </div>
           <h6 class="fw-bold text-black">Live Entertainment</h6>
-          <p class="text-muted small">Weekly performances</p>
+          <p class="text-muted small">Weekly performances by top artists</p>
         </div>
       </div>
 
@@ -281,8 +353,12 @@
   <div class="container">
 
     <div class="text-center mb-4">
-      <h2 class="fw-bold text-black">Visit Us Today</h2>
-      <p class="text-muted">Find us, contact us, or make a reservation…</p>
+        <h2 class="fw-bold text-black">Visit Us Today</h2>
+          <p class="text-muted">
+            Ready to experience luxury dining and entertainment? Find us,
+            contact us, or make a reservation. <br />
+            We're here to make your visit unforgettable.
+          </p>
     </div>
 
     <div class="row g-4 align-items-center">
@@ -355,69 +431,78 @@
   </div>
 </section>
 
-<!-- Testimonials -->
-<section class="py-5 bg-light">
-  <div class="container">
+ <!-- Testimonials -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                 <h2 class="fw-bold text-black">What Our Guests Say</h2>
+          <p class="text-muted">
+            Hear from our valued guests who've experienced the taste, ambiance,
+            and luxury we bring to every moment. <br />
+            Their stories make ours truly unforgettable.
+          </p>
+            </div>
 
-    <div class="text-center mb-5">
-      <h2 class="fw-bold text-black">What Our Guests Say</h2>
-      <p class="text-muted">Hear from our valued guests…</p>
-    </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
+                       <img src="{{ asset('assets/woman_1.jpg') }}" class="rounded-circle mb-3" width="80" height="80">
+                        <h6 class="fw-bold mb-0">Amaka O.</h6>
+                        <small class="text-muted">Food Enthusiast</small>
+                        <p class="text-muted fst-italic">
+                "Absolutely loved the jollof rice and grilled fish! The
+                atmosphere was relaxing, and the service was top-notch."
+              </p>
+                        <div class="text-warning">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-half"></i>
+                        </div>
+                    </div>
+                </div>
 
-    <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
+                       <img src="{{ asset('assets/man1.jpg') }}" class="rounded-circle mb-3" width="80" height="80">
+                        <h6 class="fw-bold mb-0">Tunde B.</h6>
+                        <small class="text-muted">Event Host</small>
+                         <p class="text-muted fst-italic">
+                "Hosted a private event here and everything was flawless. The
+                drinks, food, and ambiance exceeded my expectations."
+              </p>
+                        <div class="text-warning">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                    </div>
+                </div>
 
-      <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
-          <img src="{{ asset('assets/woman_1.jpg') }}" class="rounded-circle mb-3" width="80" height="80">
-          <h6 class="fw-bold mb-0">Amaka O.</h6>
-          <small class="text-muted">Food Enthusiast</small>
-          <p class="text-muted fst-italic">“Absolutely loved the jollof rice...”</p>
-          <div class="text-warning">
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-half"></i>
-          </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
+                       <img src="{{ asset('assets/woman_2.jpg') }}" class="rounded-circle mb-3" width="80" height="80">
+                        <h6 class="fw-bold mb-0">Lara S.</h6>
+                        <small class="text-muted">Lifestyle Blogger</small>
+                                <p class="text-muted fst-italic">
+                "A hidden gem in Lagos! I'd recommend this lounge to anyone who
+                wants a perfect blend of fine dining and entertainment."
+              </p>
+                        <div class="text-warning">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-
-      <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
-          <img src="{{ asset('assets/man1.jpg') }}" class="rounded-circle mb-3" width="80" height="80">
-          <h6 class="fw-bold mb-0">Tunde B.</h6>
-          <small class="text-muted">Event Host</small>
-          <p class="text-muted fst-italic">“Hosted a private event...”</p>
-          <div class="text-warning">
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-fill"></i>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
-          <img src="{{ asset('assets/woman_2.jpg') }}" class="rounded-circle mb-3" width="80" height="80">
-          <h6 class="fw-bold mb-0">Lara S.</h6>
-          <small class="text-muted">Lifestyle Blogger</small>
-          <p class="text-muted fst-italic">“A hidden gem…”</p>
-          <div class="text-warning">
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-fill"></i>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-</section>
+    </section>
 
 <!-- AUTH MODAL -->
 <div class="modal fade" id="authModal" tabindex="-1">
@@ -441,6 +526,7 @@
 </div>
 
 @endsection
+
 
 @push('scripts')
 <script src="{{ asset('assets/script.js') }}"></script>

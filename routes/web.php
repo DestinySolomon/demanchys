@@ -9,7 +9,8 @@ use App\Http\Controllers\EventsController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\EventController;
-
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\ServicesController;
 
 
 Route::get('/home', [HomeController::class, 'home'])->name('home');
@@ -45,8 +46,6 @@ Route::post('/gallery/upload', [GalleryController::class, 'store'])->name('galle
 
 
 
-
-
 // FRONTEND EVENTS PAGE
 Route::get('/events', [EventController::class, 'index'])->name('events');
 
@@ -59,3 +58,28 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::post('/events/{event}/update', [EventController::class, 'update'])->name('admin.events.update');
     Route::delete('/events/{event}/delete', [EventController::class, 'destroy'])->name('admin.events.delete');
 });
+
+
+// Table Booking Routes
+Route::get('/book-table', [BookingController::class, 'create'])->name('book.table');
+Route::post('/book-table', [BookingController::class, 'store'])->name('book.table.store');
+
+
+// reservation route at footer
+Route::get('/reservation', function () {
+    return view('book-table');
+})->name('reservation');
+
+
+
+// Services Pages
+Route::get('/private-events', [ServicesController::class, 'privateEvents'])->name('private-events');
+Route::get('/catering', [ServicesController::class, 'catering'])->name('catering');
+Route::get('/vip-packages', [ServicesController::class, 'vipPackages'])->name('vip-packages');
+Route::get('/corporate-events', [ServicesController::class, 'corporateEvents'])->name('corporate-events');
+
+
+// Menu Item Details
+
+
+Route::get('/menu', [MenuController::class, 'index'])->name('menu');
