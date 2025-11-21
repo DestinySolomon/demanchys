@@ -11,7 +11,7 @@ use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ServicesController;
-
+use App\Http\Controllers\CheckoutController;
 
 Route::get('/home', [HomeController::class, 'home'])->name('home');
 
@@ -80,6 +80,11 @@ Route::get('/corporate-events', [ServicesController::class, 'corporateEvents'])-
 
 
 // Menu Item Details
-
-
 Route::get('/menu', [MenuController::class, 'index'])->name('menu');
+
+
+// JSON endpoint used by the menu page JS to fetch one item + add-ons
+Route::get('/menu/item/{id}', [MenuController::class, 'showItemJson'])->name('menu.item.json');
+
+Route::post('/checkout', [App\Http\Controllers\CheckoutController::class, 'showCheckout'])->name('checkout.show');
+Route::post('/checkout/submit', [App\Http\Controllers\CheckoutController::class, 'submit'])->name('checkout.submit');

@@ -9,7 +9,8 @@
         background: #111;
         padding: 20px;
         transition: left 0.3s ease-in-out;
-        z-index: 9999;
+        /* Keep this below Bootstrap modal (1050) so modals appear above the menu */
+        z-index: 1035;
     }
 
     #mobileSlideMenu.show {
@@ -25,7 +26,8 @@
         height: 100vh;
         background: rgba(0,0,0,0.5);
         display: none;
-        z-index: 9998;
+        /* Keep this below Bootstrap modal backdrop (1040) and modal (1050) */
+        z-index: 1030;
     }
 
     #menuOverlay.active {
@@ -84,7 +86,7 @@
 </nav>
 
 <!-- MOBILE HAMBURGER (ONLY on small screens) -->
-<div class="d-lg-none mt-5 pt-4 px-3">
+<div class="d-lg-none mt-2 pt-1 px-3">
     <button id="hamburgerBtn"
         class="btn btn-outline-light w-10 d-flex justify-content-between align-items-center">
         <i class="bi bi-list fs-3"></i>
@@ -123,8 +125,8 @@
     </ul>
 </div>
 
-{{-- <!-- OVERLAY -->
-<div id="menuOverlay"></div> --}}
+<!-- OVERLAY -->
+<div id="menuOverlay"></div>
 
 <!-- (desktop menu integrated into fixed-top navbar above) -->
 
@@ -148,5 +150,28 @@
             menu.classList.remove('show');
             overlay.classList.remove('active');
         });
+    });
+
+    // Close mobile slide menu automatically when any Bootstrap modal opens
+    document.addEventListener('show.bs.modal', function () {
+        try {
+            // hide menu
+            if (menu.classList.contains('show')) {
+                menu.classList.remove('show');
+            }
+
+            // remove active overlay class
+            if (overlay.classList.contains('active')) {
+                overlay.classList.remove('active');
+            }
+
+            // force-hide overlay and disable pointer events so modal is interactive
+            overlay.style.display = 'none';
+            overlay.style.pointerEvents = 'none';
+            overlay.style.zIndex = '0';
+        } catch (err) {
+            // If elements are missing, ignore — defensive fallback
+            console.warn('Menu auto-close: element missing', err);
+        }
     });
 </script>

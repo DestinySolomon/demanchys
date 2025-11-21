@@ -65,6 +65,7 @@
 
   <!-- Custom JS -->
   <script src="{{ asset('assets/script.js') }}"></script>
+  @stack('scripts')
    <!-- put this at end of layout (before closing body) -->
 <div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -81,6 +82,6 @@
     </div>
   </div>
 </div>
-
+<!-- In your layout file, before closing </body> -->
 </body>
 </html>
