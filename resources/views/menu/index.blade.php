@@ -194,6 +194,18 @@
             <label class="form-check-label" for="cuisinePrefNoCrayfish">No crayfish</label>
         </div>
 
+
+
+        <div class="delivery-type">
+    <label for="cuisineDeliveryType">Delivery Type</label>
+    <select id="cuisineDeliveryType">
+        <option value="Eat In">Eat In</option>
+        <option value="Takeaway">Takeaway</option>
+        <option value="Home Delivery">Home Delivery</option>
+    </select>
+    </div>
+
+
         <hr>
         <div class="d-flex justify-content-between align-items-center mt-2">
             <div class="qty-controls">
@@ -232,6 +244,15 @@
             <div class="menu-item-price" id="drinksItemPrice"></div>
             <div class="small-muted" id="drinksItemDesc"></div>
         </div>
+            <div class="delivery-type">
+    <label for="cuisineDeliveryType">Delivery Type</label>
+    <select id="cuisineDeliveryType">
+        <option value="Eat In">Drink In</option>
+        <option value="Takeaway">Takeaway</option>
+        <option value="Home Delivery">Home Delivery</option>
+    </select>
+      </div>
+
 
         <hr>
         <!-- Drinks: no add-on preferences, only qty -->
@@ -273,6 +294,16 @@
             <div class="small-muted" id="grillItemDesc"></div>
         </div>
 
+
+                 <div class="delivery-type">
+                         <label for="cuisineDeliveryType">Delivery Type</label>
+                      <select id="cuisineDeliveryType">
+               <option value="Eat In">Eat In</option>
+                 <option value="Takeaway">Takeaway</option>
+               <option value="Home Delivery">Home Delivery</option>
+         </select>
+       </div>
+
         <hr>
         <h6 class="text-warning">Add-ons (e.g. extra skewers)</h6>
         <div id="grillAddonsList" class="mb-3"></div>
@@ -311,32 +342,40 @@
 </div>
 
 @push('scripts')
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // helper: format price
-    function formatPrice(n){ return '₦' + new Intl.NumberFormat().format(n); }
+    function formatPrice(n) {
+        return '₦' + new Intl.NumberFormat().format(n);
+    }
+
+    // parse a displayed price like "₦3,500" -> number 3500
+    function parsePrice(display) {
+        if (!display) return 0;
+        return Number(String(display).replace(/[^0-9.]/g, '') || 0);
+    }
 
     // universal fetch endpoint for item data
-    async function fetchItem(id){
+    async function fetchItem(id) {
         const res = await fetch(`/menu/item/${id}`);
-        if(!res.ok) throw new Error('Item not found');
+        if (!res.ok) throw new Error('Item not found');
         return await res.json();
     }
 
     // universal rendering helpers
-    function createAddonRow(addon, prefix){
-        // prefix: 'cuisine' or 'grill'
+    function createAddonRow(addon, prefix) {
         const wrapper = document.createElement('div');
-        wrapper.className = 'addon-row';
+        wrapper.className = 'addon-row d-flex justify-content-between align-items-center';
         wrapper.innerHTML = `
             <div>
                 <div class="fw-semibold addon-name">${addon.name}</div>
                 <div class="small-muted">+ ${formatPrice(addon.price)}</div>
             </div>
-            <div class="addon-controls">
-                <button class="btn btn-sm btn-outline-light addon-minus" data-id="${addon.id}" data-price="${addon.price}">-</button>
-                <input type="text" value="0" class="addon-qty" data-id="${addon.id}" data-price="${addon.price}">
-                <button class="btn btn-sm btn-outline-light addon-plus" data-id="${addon.id}" data-price="${addon.price}">+</button>
+            <div class="addon-controls d-flex align-items-center">
+                <button type="button" class="btn btn-sm btn-outline-light addon-minus me-2" data-id="${addon.id}" data-price="${addon.price}">-</button>
+                <input type="text" value="0" class="addon-qty form-control form-control-sm text-center" data-id="${addon.id}" data-price="${addon.price}" style="width:56px;">
+                <button type="button" class="btn btn-sm btn-outline-light addon-plus ms-2" data-id="${addon.id}" data-price="${addon.price}">+</button>
             </div>
         `;
         return wrapper;
@@ -352,10 +391,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 const item = await fetchItem(id);
 
                 // determine modal type by category name heuristics
-                if(category.includes('drink')) {
+                if (category.includes('drink')) {
                     populateDrinksModal(item);
                     new bootstrap.Modal(document.getElementById('modalDrinks')).show();
-                } else if(category.includes('grill') || category.includes('grilled')) {
+                } else if (category.includes('grill') || category.includes('grilled')) {
                     populateGrillModal(item);
                     new bootstrap.Modal(document.getElementById('modalGrill')).show();
                 } else {
@@ -370,16 +409,34 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ORDER NOW buttons (quick whatsapp)
+    // ORDER NOW buttons - simple redirect to checkout
     document.querySelectorAll('.order-now-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const name = btn.dataset.name;
-            const price = Number(btn.dataset.price || 0);
-            const qty = 1;
-            const total = price * qty;
-            const msg = `Order: ${name}%0AQty: ${qty}%0ATotal: ${formatPrice(total)}%0ANotes: None`;
-            const phone = '+2347087766823'; //  Testing WhatsApp number
-            window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`, '_blank');
+            const itemId = btn.dataset.id;
+            // Simple form submission - Laravel will handle authentication
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/checkout';
+            
+            // Add CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (csrfToken) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+            }
+            
+            // Add item ID
+            const itemInput = document.createElement('input');
+            itemInput.type = 'hidden';
+            itemInput.name = 'item_id';
+            itemInput.value = itemId;
+            form.appendChild(itemInput);
+            
+            document.body.appendChild(form);
+            form.submit();
         });
     });
 
@@ -388,37 +445,49 @@ document.addEventListener('DOMContentLoaded', function () {
     // ---------------------------
 
     // Cuisine modal
-    function populateCuisineModal(item){
+    function populateCuisineModal(item) {
         // set base fields
-        document.getElementById('cuisineItemName').textContent = item.name;
-        document.getElementById('cuisineItemPrice').textContent = formatPrice(item.price);
-        document.getElementById('cuisineItemDesc').textContent = item.description || '';
-        document.getElementById('cuisineItemImage').innerHTML = item.image ? `<img src="/storage/${item.image}" style="max-width:120px;border-radius:8px;" />` : '';
+        const nameEl = document.getElementById('cuisineItemName');
+        const priceEl = document.getElementById('cuisineItemPrice');
+        const descEl = document.getElementById('cuisineItemDesc');
+        const imgEl = document.getElementById('cuisineItemImage');
+
+        if (nameEl) nameEl.textContent = item.name;
+        if (priceEl) priceEl.textContent = formatPrice(item.price);
+        if (descEl) descEl.textContent = item.description || '';
+        if (imgEl) imgEl.innerHTML = item.image ? `<img src="/storage/${item.image}" style="max-width:120px;border-radius:8px;" />` : '';
 
         // reset quantities and prefs
-        document.getElementById('cuisineQtyInput').value = 1;
-        document.getElementById('cuisinePrefNoOnion').checked = false;
-        document.getElementById('cuisinePrefNoCrayfish').checked = false;
+        const qtyInput = document.getElementById('cuisineQtyInput');
+        if (qtyInput) qtyInput.value = 1;
+        if (document.getElementById('cuisinePrefNoOnion')) document.getElementById('cuisinePrefNoOnion').checked = false;
+        if (document.getElementById('cuisinePrefNoCrayfish')) document.getElementById('cuisinePrefNoCrayfish').checked = false;
 
         // render addons (plus/minus)
         const list = document.getElementById('cuisineAddonsList');
-        list.innerHTML = '';
-        const addons = item.addons || [];
-        if(addons.length === 0){
-            list.innerHTML = '<div class="small-muted">No add-ons available</div>';
-        } else {
-            addons.forEach(a => list.appendChild(createAddonRow(a, 'cuisine')));
+        if (list) {
+            list.innerHTML = '';
+            const addons = item.addons || [];
+            if (addons.length === 0) {
+                list.innerHTML = '<div class="small-muted">No add-ons available</div>';
+            } else {
+                addons.forEach(a => list.appendChild(createAddonRow(a, 'cuisine')));
+            }
+            // attach addon plus/minus logic for cuisine
+            attachAddonControls(list);
         }
 
-        // attach addon plus/minus logic for cuisine
-        attachAddonControls(list);
-
-        // recalc initial total
-        window._cuisine = { base_price: Number(item.price || 0) };
+        // set stored object
+        window._cuisine = {
+            id: item.id,
+            name: item.name,
+            category: item.category || 'cuisine',
+            base_price: Number(item.price || 0)
+        };
         recalcCuisineTotal();
     }
 
-    function attachAddonControls(listEl){
+    function attachAddonControls(listEl) {
         // plus
         listEl.querySelectorAll('.addon-plus').forEach(btn => {
             btn.onclick = () => {
@@ -427,6 +496,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 recalcAllTotals();
             };
         });
+        
         // minus
         listEl.querySelectorAll('.addon-minus').forEach(btn => {
             btn.onclick = () => {
@@ -435,46 +505,74 @@ document.addEventListener('DOMContentLoaded', function () {
                 recalcAllTotals();
             };
         });
+        
         // direct input change
         listEl.querySelectorAll('.addon-qty').forEach(inp => {
-            inp.addEventListener('input', () => { inp.value = Math.max(0, Number(inp.value || 0)); recalcAllTotals(); });
+            inp.addEventListener('input', () => {
+                inp.value = Math.max(0, Number(inp.value || 0));
+                recalcAllTotals();
+            });
         });
     }
 
     // Drinks modal
-    function populateDrinksModal(item){
-        document.getElementById('drinksItemName').textContent = item.name;
-        document.getElementById('drinksItemPrice').textContent = formatPrice(item.price);
-        document.getElementById('drinksItemDesc').textContent = item.description || '';
-        document.getElementById('drinksItemImage').innerHTML = item.image ? `<img src="/storage/${item.image}" style="max-width:120px;border-radius:8px;" />` : '';
+    function populateDrinksModal(item) {
+        const nameEl = document.getElementById('drinksItemName');
+        const priceEl = document.getElementById('drinksItemPrice');
+        const descEl = document.getElementById('drinksItemDesc');
+        const imgEl = document.getElementById('drinksItemImage');
 
-        document.getElementById('drinksQtyInput').value = 1;
-        window._drinks = { base_price: Number(item.price || 0) };
+        if (nameEl) nameEl.textContent = item.name;
+        if (priceEl) priceEl.textContent = formatPrice(item.price);
+        if (descEl) descEl.textContent = item.description || '';
+        if (imgEl) imgEl.innerHTML = item.image ? `<img src="/storage/${item.image}" style="max-width:120px;border-radius:8px;" />` : '';
+
+        const qtyInput = document.getElementById('drinksQtyInput');
+        if (qtyInput) qtyInput.value = 1;
+        window._drinks = {
+            id: item.id,
+            name: item.name,
+            category: item.category || 'drinks',
+            base_price: Number(item.price || 0)
+        };
         recalcDrinksTotal();
     }
 
     // Grill modal
-    function populateGrillModal(item){
-        document.getElementById('grillItemName').textContent = item.name;
-        document.getElementById('grillItemPrice').textContent = formatPrice(item.price);
-        document.getElementById('grillItemDesc').textContent = item.description || '';
-        document.getElementById('grillItemImage').innerHTML = item.image ? `<img src="/storage/${item.image}" style="max-width:120px;border-radius:8px;" />` : '';
+    function populateGrillModal(item) {
+        const nameEl = document.getElementById('grillItemName');
+        const priceEl = document.getElementById('grillItemPrice');
+        const descEl = document.getElementById('grillItemDesc');
+        const imgEl = document.getElementById('grillItemImage');
 
-        document.getElementById('grillQtyInput').value = 1;
-        document.getElementById('grillPrefNoOnion').checked = false;
-        document.getElementById('grillPrefNoVeg').checked = false;
+        if (nameEl) nameEl.textContent = item.name;
+        if (priceEl) priceEl.textContent = formatPrice(item.price);
+        if (descEl) descEl.textContent = item.description || '';
+        if (imgEl) imgEl.innerHTML = item.image ? `<img src="/storage/${item.image}" style="max-width:120px;border-radius:8px;" />` : '';
+
+        const qtyInput = document.getElementById('grillQtyInput');
+        if (qtyInput) qtyInput.value = 1;
+        if (document.getElementById('grillPrefNoOnion')) document.getElementById('grillPrefNoOnion').checked = false;
+        if (document.getElementById('grillPrefNoVeg')) document.getElementById('grillPrefNoVeg').checked = false;
 
         const list = document.getElementById('grillAddonsList');
-        list.innerHTML = '';
-        const addons = item.addons || [];
-        if(addons.length === 0){
-            list.innerHTML = '<div class="small-muted">No add-ons available</div>';
-        } else {
-            addons.forEach(a => list.appendChild(createAddonRow(a, 'grill')));
+        if (list) {
+            list.innerHTML = '';
+            const addons = item.addons || [];
+            if (addons.length === 0) {
+                list.innerHTML = '<div class="small-muted">No add-ons available</div>';
+            } else {
+                addons.forEach(a => list.appendChild(createAddonRow(a, 'grill')));
+            }
+            attachAddonControls(list);
         }
-        attachAddonControls(list);
 
-        window._grill = { base_price: Number(item.price || 0) };
+        window._grill = {
+            id: item.id,
+            name: item.name,
+            category: item.category || 'grill',
+            base_price: Number(item.price || 0)
+        };
         recalcGrillTotal();
     }
 
@@ -483,170 +581,279 @@ document.addEventListener('DOMContentLoaded', function () {
     // ---------------------------
 
     // cuisine qty buttons
-    document.getElementById('cuisineQtyPlus').addEventListener('click', ()=> {
-        const el = document.getElementById('cuisineQtyInput'); el.value = Math.max(1, Number(el.value) + 1); recalcCuisineTotal();
-    });
-    document.getElementById('cuisineQtyMinus').addEventListener('click', ()=> {
-        const el = document.getElementById('cuisineQtyInput'); el.value = Math.max(1, Number(el.value) - 1); recalcCuisineTotal();
-    });
-    document.getElementById('cuisineQtyInput').addEventListener('input', ()=> { document.getElementById('cuisineQtyInput').value = Math.max(1, Number(document.getElementById('cuisineQtyInput').value || 1)); recalcCuisineTotal(); });
+    if (document.getElementById('cuisineQtyPlus')) {
+        document.getElementById('cuisineQtyPlus').addEventListener('click', () => {
+            const el = document.getElementById('cuisineQtyInput');
+            el.value = Math.max(1, Number(el.value) + 1);
+            recalcCuisineTotal();
+        });
+    }
+    
+    if (document.getElementById('cuisineQtyMinus')) {
+        document.getElementById('cuisineQtyMinus').addEventListener('click', () => {
+            const el = document.getElementById('cuisineQtyInput');
+            el.value = Math.max(1, Number(el.value) - 1);
+            recalcCuisineTotal();
+        });
+    }
+    
+    if (document.getElementById('cuisineQtyInput')) {
+        document.getElementById('cuisineQtyInput').addEventListener('input', () => {
+            document.getElementById('cuisineQtyInput').value = Math.max(1, Number(document.getElementById('cuisineQtyInput').value || 1));
+            recalcCuisineTotal();
+        });
+    }
 
-    function recalcCuisineTotal(){
+    function recalcCuisineTotal() {
         const cur = window._cuisine;
-        if(!cur) return;
+        if (!cur) return;
         const qty = Number(document.getElementById('cuisineQtyInput').value || 1);
         let addonsTotal = 0;
-        document.querySelectorAll('#cuisineAddonsList .addon-qty').forEach(i => addonsTotal += Number(i.value || 0) * Number(i.dataset.price || 0));
+        document.querySelectorAll('#cuisineAddonsList .addon-qty').forEach(i => {
+            addonsTotal += Number(i.value || 0) * Number(i.dataset.price || 0);
+        });
         const total = (cur.base_price + addonsTotal) * qty;
-        document.getElementById('cuisineTotalPrice').textContent = formatPrice(total);
+        if (document.getElementById('cuisineTotalPrice')) {
+            document.getElementById('cuisineTotalPrice').textContent = formatPrice(total);
+        }
     }
 
     // drinks qty
-    document.getElementById('drinksQtyPlus').addEventListener('click', ()=> {
-        const el = document.getElementById('drinksQtyInput'); el.value = Math.max(1, Number(el.value) + 1); recalcDrinksTotal();
-    });
-    document.getElementById('drinksQtyMinus').addEventListener('click', ()=> {
-        const el = document.getElementById('drinksQtyInput'); el.value = Math.max(1, Number(el.value) - 1); recalcDrinksTotal();
-    });
-    document.getElementById('drinksQtyInput').addEventListener('input', ()=> { document.getElementById('drinksQtyInput').value = Math.max(1, Number(document.getElementById('drinksQtyInput').value || 1)); recalcDrinksTotal(); });
+    if (document.getElementById('drinksQtyPlus')) {
+        document.getElementById('drinksQtyPlus').addEventListener('click', () => {
+            const el = document.getElementById('drinksQtyInput');
+            el.value = Math.max(1, Number(el.value) + 1);
+            recalcDrinksTotal();
+        });
+    }
+    
+    if (document.getElementById('drinksQtyMinus')) {
+        document.getElementById('drinksQtyMinus').addEventListener('click', () => {
+            const el = document.getElementById('drinksQtyInput');
+            el.value = Math.max(1, Number(el.value) - 1);
+            recalcDrinksTotal();
+        });
+    }
+    
+    if (document.getElementById('drinksQtyInput')) {
+        document.getElementById('drinksQtyInput').addEventListener('input', () => {
+            document.getElementById('drinksQtyInput').value = Math.max(1, Number(document.getElementById('drinksQtyInput').value || 1));
+            recalcDrinksTotal();
+        });
+    }
 
-    function recalcDrinksTotal(){
+    function recalcDrinksTotal() {
         const cur = window._drinks;
-        if(!cur) return;
+        if (!cur) return;
         const qty = Number(document.getElementById('drinksQtyInput').value || 1);
         const total = cur.base_price * qty;
-        document.getElementById('drinksTotalPrice').textContent = formatPrice(total);
+        if (document.getElementById('drinksTotalPrice')) {
+            document.getElementById('drinksTotalPrice').textContent = formatPrice(total);
+        }
     }
 
     // grill qty
-    document.getElementById('grillQtyPlus').addEventListener('click', ()=> {
-        const el = document.getElementById('grillQtyInput'); el.value = Math.max(1, Number(el.value) + 1); recalcGrillTotal();
-    });
-    document.getElementById('grillQtyMinus').addEventListener('click', ()=> {
-        const el = document.getElementById('grillQtyInput'); el.value = Math.max(1, Number(el.value) - 1); recalcGrillTotal();
-    });
-    document.getElementById('grillQtyInput').addEventListener('input', ()=> { document.getElementById('grillQtyInput').value = Math.max(1, Number(document.getElementById('grillQtyInput').value || 1)); recalcGrillTotal(); });
+    if (document.getElementById('grillQtyPlus')) {
+        document.getElementById('grillQtyPlus').addEventListener('click', () => {
+            const el = document.getElementById('grillQtyInput');
+            el.value = Math.max(1, Number(el.value) + 1);
+            recalcGrillTotal();
+        });
+    }
+    
+    if (document.getElementById('grillQtyMinus')) {
+        document.getElementById('grillQtyMinus').addEventListener('click', () => {
+            const el = document.getElementById('grillQtyInput');
+            el.value = Math.max(1, Number(el.value) - 1);
+            recalcGrillTotal();
+        });
+    }
+    
+    if (document.getElementById('grillQtyInput')) {
+        document.getElementById('grillQtyInput').addEventListener('input', () => {
+            document.getElementById('grillQtyInput').value = Math.max(1, Number(document.getElementById('grillQtyInput').value || 1));
+            recalcGrillTotal();
+        });
+    }
 
-    function recalcGrillTotal(){
+    function recalcGrillTotal() {
         const cur = window._grill;
-        if(!cur) return;
+        if (!cur) return;
         const qty = Number(document.getElementById('grillQtyInput').value || 1);
         let addonsTotal = 0;
-        document.querySelectorAll('#grillAddonsList .addon-qty').forEach(i => addonsTotal += Number(i.value || 0) * Number(i.dataset.price || 0));
+        document.querySelectorAll('#grillAddonsList .addon-qty').forEach(i => {
+            addonsTotal += Number(i.value || 0) * Number(i.dataset.price || 0);
+        });
         const total = (cur.base_price + addonsTotal) * qty;
-        document.getElementById('grillTotalPrice').textContent = formatPrice(total);
+        if (document.getElementById('grillTotalPrice')) {
+            document.getElementById('grillTotalPrice').textContent = formatPrice(total);
+        }
     }
 
     // Recalc helper used by addon controls
-    function recalcAllTotals(){
-        recalcCuisineTotal(); recalcGrillTotal(); recalcDrinksTotal();
+    function recalcAllTotals() {
+        recalcCuisineTotal();
+        recalcGrillTotal();
+        recalcDrinksTotal();
     }
 
     // Listen to addon qty changes anywhere (delegated) - update totals
-    document.addEventListener('input', function(e){
-        if(e.target && e.target.classList.contains('addon-qty')) recalcAllTotals();
-        if(e.target && e.target.classList.contains('addon-qty')) recalcAllTotals();
+    document.addEventListener('input', function(e) {
+        if (e.target && e.target.classList && e.target.classList.contains('addon-qty')) {
+            recalcAllTotals();
+        }
     });
 
     // ---------------------------
-    // Modal footer buttons (WhatsApp + Complete)
+    // Modal Complete buttons
     // ---------------------------
-    // All modal whatsapp buttons share logic: read current visible modal fields
-    document.querySelectorAll('.modal-whatsapp-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            // determine which modal is visible
-            const visible = document.querySelector('.modal.show');
-            if(!visible) return alert('No modal active');
-            if(visible.id === 'modalDrinks') return sendDrinksWhatsApp();
-            if(visible.id === 'modalGrill') return sendGrillWhatsApp();
-            return sendCuisineWhatsApp();
-        });
-    });
-
+    
+    // Complete (POST to /checkout)
     document.querySelectorAll('.modal-complete-btn').forEach(b => {
         b.addEventListener('click', () => {
-            // placeholder: currently open whatsapp to same message; replace with POST to /orders later
-            document.querySelector('.modal-whatsapp-btn').click();
+            const visible = document.querySelector('.modal.show');
+            if (!visible) return alert('No modal active');
+
+            // build order payload depending on visible modal
+            let payload = {
+                item_name: '',
+                qty: 1,
+                total_display: '',
+                total_amount: 0,
+                addons: [],
+                preferences: [],
+                category: '',
+                delivery_type: 'Unspecified'
+            };
+
+            // helper to read delivery radio inside visible modal
+            function readDeliveryFromModal(el) {
+                if (!el) return 'Unspecified';
+
+                const select =
+                    el.querySelector('#cuisineDeliveryType') ||
+                    el.querySelector('#drinksDeliveryType') ||
+                    el.querySelector('#grillDeliveryType');
+
+                return select ? select.value : 'Unspecified';
+            }
+
+            if (visible.id === 'modalDrinks') {
+                const name = document.getElementById('drinksItemName').textContent;
+                const qty = Number(document.getElementById('drinksQtyInput').value || 1);
+                const totalDisplay = document.getElementById('drinksTotalPrice').textContent;
+                const totalAmt = parsePrice(totalDisplay);
+
+                payload.item_name = name;
+                payload.qty = qty;
+                payload.total_display = totalDisplay;
+                payload.total_amount = totalAmt;
+                payload.addons = [];
+                payload.preferences = [];
+                payload.delivery_type = readDeliveryFromModal(visible);
+                payload.category = (window._drinks && window._drinks.category) || 'drinks';
+
+            } else if (visible.id === 'modalGrill') {
+                const name = document.getElementById('grillItemName').textContent;
+                const qty = Number(document.getElementById('grillQtyInput').value || 1);
+                const totalDisplay = document.getElementById('grillTotalPrice').textContent;
+                const totalAmt = parsePrice(totalDisplay);
+
+                payload.item_name = name;
+                payload.qty = qty;
+                payload.total_display = totalDisplay;
+                payload.total_amount = totalAmt;
+                payload.addons = [];
+                document.querySelectorAll('#grillAddonsList .addon-qty').forEach(i => {
+                    const q = Number(i.value || 0);
+                    if (q > 0) {
+                        const id = i.dataset.id;
+                        const price = Number(i.dataset.price || 0);
+                        const nameA = i.closest('.addon-row').querySelector('.addon-name').textContent.trim();
+                        payload.addons.push({id, name: nameA, qty: q, price: price});
+                    }
+                });
+                if (document.getElementById('grillPrefNoOnion') && document.getElementById('grillPrefNoOnion').checked) payload.preferences.push('No onion');
+                if (document.getElementById('grillPrefNoVeg') && document.getElementById('grillPrefNoVeg').checked) payload.preferences.push('No vegetables');
+                payload.delivery_type = readDeliveryFromModal(visible);
+                payload.category = (window._grill && window._grill.category) || 'grill';
+
+            } else {
+                // cuisine
+                const name = document.getElementById('cuisineItemName').textContent;
+                const qty = Number(document.getElementById('cuisineQtyInput').value || 1);
+                const totalDisplay = document.getElementById('cuisineTotalPrice').textContent;
+                const totalAmt = parsePrice(totalDisplay);
+
+                payload.item_name = name;
+                payload.qty = qty;
+                payload.total_display = totalDisplay;
+                payload.total_amount = totalAmt;
+                payload.addons = [];
+                document.querySelectorAll('#cuisineAddonsList .addon-qty').forEach(i => {
+                    const q = Number(i.value || 0);
+                    if (q > 0) {
+                        const id = i.dataset.id;
+                        const price = Number(i.dataset.price || 0);
+                        const nameA = i.closest('.addon-row').querySelector('.addon-name').textContent.trim();
+                        payload.addons.push({id, name: nameA, qty: q, price: price});
+                    }
+                });
+                if (document.getElementById('cuisinePrefNoOnion') && document.getElementById('cuisinePrefNoOnion').checked) payload.preferences.push('No onion');
+                if (document.getElementById('cuisinePrefNoCrayfish') && document.getElementById('cuisinePrefNoCrayfish').checked) payload.preferences.push('No crayfish');
+                payload.delivery_type = readDeliveryFromModal(visible);
+                payload.category = (window._cuisine && window._cuisine.category) || 'cuisine';
+            }
+
+            // create and submit form to /checkout with CSRF token
+            const csrf = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/checkout';
+
+            // hidden inputs
+            function addInput(name, value) {
+                const i = document.createElement('input');
+                i.type = 'hidden';
+                i.name = name;
+                i.value = (typeof value === 'string') ? value : JSON.stringify(value);
+                form.appendChild(i);
+            }
+
+            addInput('_token', csrf);
+            addInput('item_name', payload.item_name);
+            addInput('qty', payload.qty);
+            addInput('total_display', payload.total_display);
+            addInput('total_amount', payload.total_amount);
+            addInput('addons', payload.addons);
+            addInput('preferences', payload.preferences);
+            addInput('category', payload.category);
+            addInput('delivery_type', payload.delivery_type);
+
+            document.body.appendChild(form);
+            form.submit();
         });
     });
-
-    // WhatsApp message builders
-    function sendCuisineWhatsApp(){
-        const name = document.getElementById('cuisineItemName').textContent;
-        const qty = Number(document.getElementById('cuisineQtyInput').value || 1);
-        const addons = [];
-        document.querySelectorAll('#cuisineAddonsList .addon-qty').forEach(i => {
-            const q = Number(i.value || 0);
-            if(q > 0){
-                const aName = i.closest('.addon-row').querySelector('.addon-name').textContent.trim();
-                addons.push({name: aName, qty: q, price: Number(i.dataset.price || 0)});
-            }
-        });
-        const prefs = [];
-        if(document.getElementById('cuisinePrefNoOnion').checked) prefs.push('No onion');
-        if(document.getElementById('cuisinePrefNoCrayfish').checked) prefs.push('No crayfish');
-
-        let msg = `Order from De Manchys Lounge%0AItem: ${name}%0AQty: ${qty}%0A`;
-        if(addons.length){
-            msg += `Add-ons:%0A`;
-            addons.forEach(a => msg += ` - ${a.name} x${a.qty} (+${formatPrice(a.price * a.qty)})%0A`);
-        }
-        if(prefs.length) msg += `Preferences: ${prefs.join(', ')}%0A`;
-        const total = document.getElementById('cuisineTotalPrice').textContent;
-        msg += `Total: ${total}%0A`;
-        const phone = '<YOUR_WHATSAPP_NUMBER_WITH_COUNTRYCODE>';
-        window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`, '_blank');
-    }
-
-    function sendDrinksWhatsApp(){
-        const name = document.getElementById('drinksItemName').textContent;
-        const qty = Number(document.getElementById('drinksQtyInput').value || 1);
-        const total = document.getElementById('drinksTotalPrice').textContent;
-        let msg = `Order from De Manchys Lounge%0AItem: ${name}%0AQty: ${qty}%0ATotal: ${total}%0A`;
-        const phone = '<YOUR_WHATSAPP_NUMBER_WITH_COUNTRYCODE>';
-        window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`, '_blank');
-    }
-
-    function sendGrillWhatsApp(){
-        const name = document.getElementById('grillItemName').textContent;
-        const qty = Number(document.getElementById('grillQtyInput').value || 1);
-        const addons = [];
-        document.querySelectorAll('#grillAddonsList .addon-qty').forEach(i => {
-            const q = Number(i.value || 0);
-            if(q>0){
-                const aName = i.closest('.addon-row').querySelector('.addon-name').textContent.trim();
-                addons.push({name: aName, qty: q, price: Number(i.dataset.price || 0)});
-            }
-        });
-        const prefs = [];
-        if(document.getElementById('grillPrefNoOnion').checked) prefs.push('No onion');
-        if(document.getElementById('grillPrefNoVeg').checked) prefs.push('No vegetables');
-
-        let msg = `Order from De Manchys Lounge%0AItem: ${name}%0AQty: ${qty}%0A`;
-        if(addons.length){
-            msg += `Add-ons:%0A`;
-            addons.forEach(a => msg += ` - ${a.name} x${a.qty} (+${formatPrice(a.price * a.qty)})%0A`);
-        }
-        if(prefs.length) msg += `Preferences: ${prefs.join(', ')}%0A`;
-        const total = document.getElementById('grillTotalPrice').textContent;
-        msg += `Total: ${total}%0A`;
-        const phone = '<YOUR_WHATSAPP_NUMBER_WITH_COUNTRYCODE>';
-        window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`, '_blank');
-    }
 
     // When modals hide, clear their addon inputs to avoid stale state
-    ['modalCuisine','modalDrinks','modalGrill'].forEach(id => {
-        document.getElementById(id).addEventListener('hidden.bs.modal', () => {
+    ['modalCuisine', 'modalDrinks', 'modalGrill'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('hidden.bs.modal', () => {
             // reset stored objects & addon inputs
-            window._cuisine = null; window._drinks = null; window._grill = null;
+            window._cuisine = null;
+            window._drinks = null;
+            window._grill = null;
             // clear addon lists
-            if(document.getElementById('cuisineAddonsList')) document.getElementById('cuisineAddonsList').innerHTML = '';
-            if(document.getElementById('grillAddonsList')) document.getElementById('grillAddonsList').innerHTML = '';
+            if (document.getElementById('cuisineAddonsList')) document.getElementById('cuisineAddonsList').innerHTML = '';
+            if (document.getElementById('grillAddonsList')) document.getElementById('grillAddonsList').innerHTML = '';
         });
     });
-
 });
 </script>
+
+
+
 @endpush
 
 @endsection

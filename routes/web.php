@@ -12,6 +12,8 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ServicesController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\Auth\OtpLoginController;
+
 
 Route::get('/home', [HomeController::class, 'home'])->name('home');
 
@@ -86,5 +88,16 @@ Route::get('/menu', [MenuController::class, 'index'])->name('menu');
 // JSON endpoint used by the menu page JS to fetch one item + add-ons
 Route::get('/menu/item/{id}', [MenuController::class, 'showItemJson'])->name('menu.item.json');
 
-Route::post('/checkout', [App\Http\Controllers\CheckoutController::class, 'showCheckout'])->name('checkout.show');
-Route::post('/checkout/submit', [App\Http\Controllers\CheckoutController::class, 'submit'])->name('checkout.submit');
+
+Route::middleware('auth')->group(function () {
+    Route::post('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+});
+
+Route::post('/checkout/submit', [CheckoutController::class, 'submit'])->name('checkout.submit');
+
+
+// WhatsApp OTP Login
+Route::get('/login', [OtpLoginController::class, 'loginPage'])->name('login');
+Route::post('/send-otp', [OtpLoginController::class, 'sendOtp']);
+Route::get('/verify-otp', [OtpLoginController::class, 'verifyPage']);
+Route::post('/verify-otp', [OtpLoginController::class, 'verifyOtp']);
