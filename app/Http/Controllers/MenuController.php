@@ -8,9 +8,12 @@ use Illuminate\Http\Request;
 
 class MenuController extends Controller
 {
-    // show menu page with categories and items
+
+   // show menu page with categories and items
     public function index(Request $request)
     {
+
+         return view('menu.index', ['categories' => []]);
         // load categories + items (eager load)
         $categories = MenuCategory::with(['items' => function($q){
             $q->orderBy('created_at','desc');
@@ -32,7 +35,7 @@ public function showItemJson($id)
     }
 
 
-     // fallback: ensure addons exists as array
+     //fallback: ensure addons exists as array
     if (! isset($item->addons)) {
         $item->addons = [];
     }
