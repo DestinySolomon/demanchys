@@ -1,115 +1,236 @@
-
 @extends('layouts.app')
 
 @section('content')
 <style>
-/* -------------------------
-   Menu styles (kept light)
-   ------------------------- */
-
-   .container{
-    margin-top: 0px;
-    padding-top: 0px;
-   }
-.menu-section-title { font-size: 28px; font-weight:700; margin-top:45px; margin-bottom:20px; color:#f8f9fa; border-left:5px solid #ffc107; padding-left:10px; }
-.menu-card { background:#1b1b1b; border-radius:14px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.4); transition:transform .2s; }
-.menu-card:hover { transform: translateY(-4px); }
-.menu-card img { width:100%; height:160px; object-fit:cover; }
-.menu-card-body { padding:20px; width: 100% }
-.availability-tag { padding:5px 10px; font-size:12px; border-radius:30px; display:inline-block; margin-bottom:10px; }
-.daily { background:#198754; color:#fff; } .ondemand { background:#0d6efd; color:#fff; }
-.menu-item-name { font-size:19px; font-weight:700; color:#fff; }
-.menu-item-description { color:#ccc; font-size:14px; margin-top:6px; }
-.menu-item-price { color:#ffc107; font-weight:700; font-size:20px; margin-top:12px; }
-.modal-backdrop{display:none !important;}
-.btn-custom { background:#ffc107; border:none; color:#000; font-weight:600; }
-.btn-outline-custom { border:2px solid #ffc107; color:#ffc107; font-weight:600; font-size: 15px; }
-.btn-outline-custom:hover { background:#ffc107; color:#000; }
-.modal-content { background:#111; color:white; border-radius:10px; }
-.addon-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
-.addon-controls { display:flex; gap:6px; align-items:center; }
-.addon-qty { width:46px; text-align:center; background:transparent; color:white; border:none; }
-.qty-controls { display:flex; gap:8px; align-items:center; }
-.small-muted { color:#bfbfbf; font-size:13px; }
-.modal-sm-custom { max-width:520px; }
-@media (max-width:576px) { .modal-sm-custom { max-width: 92%; } }
-
-.menu-card .btn {
-    font-size: 10px !important;   /* slightly smaller text */
-    padding: 6px 5px !important;
-    white-space: nowrap !important;  /* prevents text from breaking */
-}
-
-.menu-card .d-flex {
-    gap: 20px !important;             /* reduce gap between buttons */
-}
-
-
-/* Make custom small modal */
-.modal-sm-custom .modal-content {
-    max-width: 660px;
-    margin: 0 auto;
-    border-radius: 12px;
-}
-
-/* Allow smooth scroll inside the modal body */
-.modal-dialog-scrollable .modal-body {
-    max-height: 40vh; 
-    overflow-y: auto;
-}
-
-/* Optional: reduce padding inside modal */
-.modal-sm-custom .modal-content {
-    padding: 10px !important;
-}
-
-/* Make header compact */
-.modal-sm-custom .modal-header {
-    padding: 8px 12px !important;
-}
-
-/* Fix huge empty space under navbar on mobile */
-@media (max-width: 576px) {
-    body {
-        padding-top: 70px !important; /* reduce space */
+    /* -------------------------
+       Menu styles
+       ------------------------- */
+    .container {
+        margin-top: 0px;
+        padding-top: 0px;
     }
 
     .menu-section-title {
-        margin-top: 10px !important;
+        font-size: 28px;
+        font-weight: 700;
+        margin-top: 45px;
+        margin-bottom: 20px;
+        color: #f8f9fa;
+        border-left: 5px solid #ffc107;
+        padding-left: 10px;
     }
-}
-.menu-card {
-    background: #1b1b1b;
-    border-radius: 10px;
-    overflow: hidden;
-    height: 100%;
-}
 
-.menu-card img {
-    width: 100%;
-    height: 130px;
-    object-fit: cover;
-}
+    .menu-card {
+        background: #1b1b1b;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        transition: transform .2s;
+        height: 100%;
+    }
 
-@media (max-width: 576px) {
+    .menu-card:hover {
+        transform: translateY(-4px);
+    }
+
     .menu-card img {
-        height: 110px;
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+    }
+
+    .menu-card-body {
+        padding: 20px;
+        width: 100%;
+    }
+
+    .availability-tag {
+        padding: 5px 10px;
+        font-size: 12px;
+        border-radius: 30px;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+
+    .daily {
+        background: #198754;
+        color: #fff;
+    }
+
+    .ondemand {
+        background: #0d6efd;
+        color: #fff;
     }
 
     .menu-item-name {
-        font-size: 14px !important;
+        font-size: 19px;
+        font-weight: 700;
+        color: #fff;
     }
 
     .menu-item-description {
-        font-size: 11px !important;
+        color: #ccc;
+        font-size: 14px;
+        margin-top: 6px;
     }
 
     .menu-item-price {
-        font-size: 14px !important;
+        color: #ffc107;
+        font-weight: 700;
+        font-size: 20px;
+        margin-top: 12px;
     }
-}
 
+    .modal-backdrop {
+        display: none !important;
+    }
 
+    .btn-custom {
+        background: #ffc107;
+        border: none;
+        color: #000;
+        font-weight: 600;
+    }
+
+    .btn-outline-custom {
+        border: 2px solid #ffc107;
+        color: #ffc107;
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .btn-outline-custom:hover {
+        background: #ffc107;
+        color: #000;
+    }
+
+    .modal-content {
+        background: #111;
+        color: white;
+        border-radius: 10px;
+    }
+
+    .addon-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .addon-controls {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .addon-qty {
+        width: 46px;
+        text-align: center;
+        background: transparent;
+        color: white;
+        border: none;
+    }
+
+    .qty-controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .small-muted {
+        color: #bfbfbf;
+        font-size: 13px;
+    }
+
+    .modal-sm-custom {
+        max-width: 520px;
+    }
+
+    .delivery-type {
+        margin: 15px 0;
+    }
+
+    .delivery-type label {
+        display: block;
+        margin-bottom: 8px;
+        color: #ffc107;
+        font-weight: 600;
+    }
+
+    .delivery-type select {
+        width: 100%;
+        padding: 8px 12px;
+        border-radius: 6px;
+        background: #2d2d2d;
+        color: white;
+        border: 1px solid #444;
+    }
+
+    .delivery-type select:required:invalid {
+        color: #6c757d;
+    }
+
+    .delivery-type select option {
+        color: white;
+        background: #2d2d2d;
+    }
+
+    /* Make custom small modal */
+    .modal-sm-custom .modal-content {
+        max-width: 660px;
+        margin: 0 auto;
+        border-radius: 12px;
+    }
+
+    /* Allow smooth scroll inside the modal body */
+    .modal-dialog-scrollable .modal-body {
+        max-height: 40vh;
+        overflow-y: auto;
+    }
+
+    /* Optional: reduce padding inside modal */
+    .modal-sm-custom .modal-content {
+        padding: 10px !important;
+    }
+
+    /* Make header compact */
+    .modal-sm-custom .modal-header {
+        padding: 8px 12px !important;
+    }
+
+    /* Fix huge empty space under navbar on mobile */
+    @media (max-width: 576px) {
+        body {
+            padding-top: 70px !important;
+        }
+
+        .menu-section-title {
+            margin-top: 10px !important;
+        }
+
+        .menu-card img {
+            height: 110px;
+        }
+
+        .menu-item-name {
+            font-size: 14px !important;
+        }
+
+        .menu-item-description {
+            font-size: 11px !important;
+        }
+
+        .menu-item-price {
+            font-size: 14px !important;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .modal-sm-custom {
+            max-width: 92%;
+        }
+    }
 </style>
 
 <div class="container py-1 pt-0">
@@ -122,7 +243,6 @@
                     <div class="menu-card">
                         <img src="{{ asset($item->image ? 'storage/'.$item->image : 'assets/placeholder_food.jpg') }}" alt="{{ $item->name }}">
                         <div class="menu-card-body">
-
                             @if(!empty($item->availability))
                                 <span class="availability-tag {{ strtolower($item->availability) === 'daily' ? 'daily' : 'ondemand' }}">
                                     {{ $item->availability }}
@@ -134,19 +254,11 @@
                             <div class="menu-item-price">₦{{ number_format($item->price) }}</div>
 
                             <div class="d-flex gap-2 mt-3">
-                                <!-- Order now: immediately send default order (no customization) -->
-                                <button class="btn btn-custom w-50 order-now-btn"
-                                        data-id="{{ $item->id }}"
-                                        data-name="{{ $item->name }}"
-                                        data-price="{{ $item->price }}">
-                                    Order Now
-                                </button>
-
-                                <!-- Customize: opens appropriate modal based on category -->
-                                <button class="btn btn-outline-custom w-50 customize-btn"
+                                <!-- Only Customize button remains -->
+                                <button class="btn btn-outline-custom w-100 customize-btn"
                                         data-id="{{ $item->id }}"
                                         data-category="{{ strtolower($category->name) }}">
-                                    Customize
+                                    Customize & Order
                                 </button>
                             </div>
                         </div>
@@ -163,187 +275,203 @@
 
 <!-- ============================
      C O M M O N   M O D A L S
-     (small, scrollable)
      ============================ -->
 
 <!-- Cuisine Modal -->
 <div class="modal fade" id="modalCuisine" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm-custom">
-    <div class="modal-content p-3">
-      <div class="modal-header border-0">
-        <h5 class="modal-title" id="cuisineItemName">Customize</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div id="cuisineItemImage" class="mb-2 text-center"></div>
-        <div class="mb-2">
-            <div class="menu-item-price" id="cuisineItemPrice"></div>
-            <div class="small-muted" id="cuisineItemDesc"></div>
-        </div>
-
-        <hr>
-        <h6 class="text-warning">Add-ons</h6>
-        <div id="cuisineAddonsList" class="mb-3"><!-- dynamic addons with +/- --></div>
-
-        <h6 class="text-warning">Preferences</h6>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="cuisinePrefNoOnion">
-            <label class="form-check-label" for="cuisinePrefNoOnion">No onion</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="cuisinePrefNoCrayfish">
-            <label class="form-check-label" for="cuisinePrefNoCrayfish">No crayfish</label>
-        </div>
-
-
-
-        <div class="delivery-type">
-    <label for="cuisineDeliveryType">Delivery Type</label>
-    <select id="cuisineDeliveryType">
-        <option value="Eat In">Eat In</option>
-        <option value="Takeaway">Takeaway</option>
-        <option value="Home Delivery">Home Delivery</option>
-    </select>
-    </div>
-
-
-        <hr>
-        <div class="d-flex justify-content-between align-items-center mt-2">
-            <div class="qty-controls">
-                <button class="btn btn-sm btn-outline-light" id="cuisineQtyMinus">-</button>
-                <input type="text" id="cuisineQtyInput" value="1" style="width:48px; text-align:center; background:transparent; color:white; border:none;">
-                <button class="btn btn-sm btn-outline-light" id="cuisineQtyPlus">+</button>
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm-custom">
+        <div class="modal-content p-3">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="cuisineItemName">Customize</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
+            <div class="modal-body">
+                <div id="cuisineItemImage" class="mb-2 text-center"></div>
+                <div class="mb-2">
+                    <div class="menu-item-price" id="cuisineItemPrice"></div>
+                    <div class="small-muted" id="cuisineItemDesc"></div>
+                </div>
 
-            <div>
-                <div class="small text-white">Total</div>
-                <div class="fw-bold" id="cuisineTotalPrice">₦0</div>
+                <hr>
+                <h6 class="text-warning">Add-ons</h6>
+                <div id="cuisineAddonsList" class="mb-3"><!-- dynamic addons with +/- --></div>
+
+                <h6 class="text-warning">Cuisine Preferences</h6>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="cuisinePrefNoOnion">
+                    <label class="form-check-label" for="cuisinePrefNoOnion">No onion</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="cuisinePrefNoCrayfish">
+                    <label class="form-check-label" for="cuisinePrefNoCrayfish">No crayfish</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="cuisinePrefExtraSpicy">
+                    <label class="form-check-label" for="cuisinePrefExtraSpicy">Extra spicy</label>
+                </div>
+
+                <div class="delivery-type">
+                    <label for="cuisineDeliveryType">Delivery Type *</label>
+                    <select id="cuisineDeliveryType" required>
+                        <option value="" selected disabled>Choose delivery type</option>
+                        <option value="Eat In">Eat In</option>
+                        <option value="Takeaway">Takeaway</option>
+                        <option value="Home Delivery">Home Delivery</option>
+                    </select>
+                </div>
+
+                <hr>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <div class="qty-controls">
+                        <button class="btn btn-sm btn-outline-light" id="cuisineQtyMinus">-</button>
+                        <input type="text" id="cuisineQtyInput" value="1" style="width:48px; text-align:center; background:transparent; color:white; border:none;">
+                        <button class="btn btn-sm btn-outline-light" id="cuisineQtyPlus">+</button>
+                    </div>
+
+                    <div>
+                        <div class="small text-white">Total</div>
+                        <div class="fw-bold" id="cuisineTotalPrice">₦0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-custom modal-complete-btn">Complete Order</button>
             </div>
         </div>
-      </div>
-      <div class="modal-footer border-0">
-        <button type="button" class="btn btn-outline-light modal-whatsapp-btn"><i class="bi bi-whatsapp"></i> Order via WhatsApp</button>
-        <button type="button" class="btn btn-custom modal-complete-btn">Complete Order</button>
-      </div>
     </div>
-  </div>
 </div>
-
-
 
 <!-- Drinks Modal -->
 <div class="modal fade" id="modalDrinks" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm-custom">
-    <div class="modal-content p-3">
-      <div class="modal-header border-0">
-        <h5 class="modal-title" id="drinksItemName">Order</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div id="drinksItemImage" class="mb-2 text-center"></div>
-        <div class="mb-2">
-            <div class="menu-item-price" id="drinksItemPrice"></div>
-            <div class="small-muted" id="drinksItemDesc"></div>
-        </div>
-            <div class="delivery-type">
-    <label for="cuisineDeliveryType">Delivery Type</label>
-    <select id="cuisineDeliveryType">
-        <option value="Eat In">Drink In</option>
-        <option value="Takeaway">Takeaway</option>
-        <option value="Home Delivery">Home Delivery</option>
-    </select>
-      </div>
-
-
-        <hr>
-        <!-- Drinks: no add-on preferences, only qty -->
-        <div class="small-muted mb-3">Select quantity</div>
-
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="qty-controls">
-                <button class="btn btn-sm btn-outline-light" id="drinksQtyMinus">-</button>
-                <input type="text" id="drinksQtyInput" value="1" style="width:48px; text-align:center; background:transparent; color:white; border:none;">
-                <button class="btn btn-sm btn-outline-light" id="drinksQtyPlus">+</button>
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm-custom">
+        <div class="modal-content p-3">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="drinksItemName">Order Drink</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
+            <div class="modal-body">
+                <div id="drinksItemImage" class="mb-2 text-center"></div>
+                <div class="mb-2">
+                    <div class="menu-item-price" id="drinksItemPrice"></div>
+                    <div class="small-muted" id="drinksItemDesc"></div>
+                </div>
 
-            <div>
-                <div class="small text-white">Total</div>
-                <div class="fw-bold" id="drinksTotalPrice">₦0</div>
+                <h6 class="text-warning">Drink Preferences</h6>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="drinksPrefLessIce">
+                    <label class="form-check-label" for="drinksPrefLessIce">Less ice</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="drinksPrefNoIce">
+                    <label class="form-check-label" for="drinksPrefNoIce">No ice</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="drinksPrefExtraLemon">
+                    <label class="form-check-label" for="drinksPrefExtraLemon">Extra lemon</label>
+                </div>
+
+                <div class="delivery-type">
+                    <label for="drinksDeliveryType">Delivery Type *</label>
+                    <select id="drinksDeliveryType" required>
+                        <option value="" selected disabled>Choose delivery type</option>
+                        <option value="Drink In">Drink In</option>
+                        <option value="Takeaway">Takeaway</option>
+                        <option value="Home Delivery">Home Delivery</option>
+                    </select>
+                </div>
+
+                <hr>
+                <div class="small-muted mb-3">Select quantity</div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="qty-controls">
+                        <button class="btn btn-sm btn-outline-light" id="drinksQtyMinus">-</button>
+                        <input type="text" id="drinksQtyInput" value="1" style="width:48px; text-align:center; background:transparent; color:white; border:none;">
+                        <button class="btn btn-sm btn-outline-light" id="drinksQtyPlus">+</button>
+                    </div>
+
+                    <div>
+                        <div class="small text-white">Total</div>
+                        <div class="fw-bold" id="drinksTotalPrice">₦0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-custom modal-complete-btn">Complete Order</button>
             </div>
         </div>
-      </div>
-      <div class="modal-footer border-0">
-        <button type="button" class="btn btn-outline-light modal-whatsapp-btn"><i class="bi bi-whatsapp"></i> Order via WhatsApp</button>
-        <button type="button" class="btn btn-custom modal-complete-btn">Complete Order</button>
-      </div>
     </div>
-  </div>
 </div>
 
 <!-- Grill Modal -->
 <div class="modal fade" id="modalGrill" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm-custom">
-    <div class="modal-content p-3">
-      <div class="modal-header border-0">
-        <h5 class="modal-title" id="grillItemName">Customize Grill</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div id="grillItemImage" class="mb-2 text-center"></div>
-        <div class="mb-2">
-            <div class="menu-item-price" id="grillItemPrice"></div>
-            <div class="small-muted" id="grillItemDesc"></div>
-        </div>
-
-
-                 <div class="delivery-type">
-                         <label for="cuisineDeliveryType">Delivery Type</label>
-                      <select id="cuisineDeliveryType">
-               <option value="Eat In">Eat In</option>
-                 <option value="Takeaway">Takeaway</option>
-               <option value="Home Delivery">Home Delivery</option>
-         </select>
-       </div>
-
-        <hr>
-        <h6 class="text-warning">Add-ons (e.g. extra skewers)</h6>
-        <div id="grillAddonsList" class="mb-3"></div>
-
-        <h6 class="text-warning">Preferences</h6>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="grillPrefNoOnion">
-            <label class="form-check-label" for="grillPrefNoOnion">No onion</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="grillPrefNoVeg">
-            <label class="form-check-label" for="grillPrefNoVeg">No vegetables</label>
-        </div>
-
-        <hr>
-
-        <div class="d-flex justify-content-between align-items-center mt-2">
-            <div class="qty-controls">
-                <button class="btn btn-sm btn-outline-light" id="grillQtyMinus">-</button>
-                <input type="text" id="grillQtyInput" value="1" style="width:48px; text-align:center; background:transparent; color:white; border:none;">
-                <button class="btn btn-sm btn-outline-light" id="grillQtyPlus">+</button>
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm-custom">
+        <div class="modal-content p-3">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="grillItemName">Customize Grill</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
+            <div class="modal-body">
+                <div id="grillItemImage" class="mb-2 text-center"></div>
+                <div class="mb-2">
+                    <div class="menu-item-price" id="grillItemPrice"></div>
+                    <div class="small-muted" id="grillItemDesc"></div>
+                </div>
 
-            <div>
-                <div class="small text-white">Total</div>
-                <div class="fw-bold" id="grillTotalPrice">₦0</div>
+                <hr>
+                <h6 class="text-warning">Add-ons (e.g. extra skewers)</h6>
+                <div id="grillAddonsList" class="mb-3"></div>
+
+                <h6 class="text-warning">Grill Preferences</h6>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="grillPrefNoOnion">
+                    <label class="form-check-label" for="grillPrefNoOnion">No onion</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="grillPrefNoVeg">
+                    <label class="form-check-label" for="grillPrefNoVeg">No vegetables</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="grillPrefWellDone">
+                    <label class="form-check-label" for="grillPrefWellDone">Well done</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="grillPrefExtraSauce">
+                    <label class="form-check-label" for="grillPrefExtraSauce">Extra sauce</label>
+                </div>
+
+                <div class="delivery-type">
+                    <label for="grillDeliveryType">Delivery Type *</label>
+                    <select id="grillDeliveryType" required>
+                        <option value="" selected disabled>Choose delivery type</option>
+                        <option value="Eat In">Eat In</option>
+                        <option value="Takeaway">Takeaway</option>
+                        <option value="Home Delivery">Home Delivery</option>
+                    </select>
+                </div>
+
+                <hr>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <div class="qty-controls">
+                        <button class="btn btn-sm btn-outline-light" id="grillQtyMinus">-</button>
+                        <input type="text" id="grillQtyInput" value="1" style="width:48px; text-align:center; background:transparent; color:white; border:none;">
+                        <button class="btn btn-sm btn-outline-light" id="grillQtyPlus">+</button>
+                    </div>
+
+                    <div>
+                        <div class="small text-white">Total</div>
+                        <div class="fw-bold" id="grillTotalPrice">₦0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-custom modal-complete-btn">Complete Order</button>
             </div>
         </div>
-      </div>
-      <div class="modal-footer border-0">
-        <button type="button" class="btn btn-outline-light modal-whatsapp-btn"><i class="bi bi-whatsapp"></i> Order via WhatsApp</button>
-        <button type="button" class="btn btn-custom modal-complete-btn">Complete Order</button>
-      </div>
     </div>
-  </div>
 </div>
 
 @push('scripts')
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // helper: format price
@@ -392,7 +520,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const item = await fetchItem(id);
 
                 // determine modal type by category name heuristics
-                if (category.includes('drink')) {
+                if (category.includes('drink') || category.includes('cocktail') || category.includes('wine')) {
                     populateDrinksModal(item);
                     new bootstrap.Modal(document.getElementById('modalDrinks')).show();
                 } else if (category.includes('grill') || category.includes('grilled')) {
@@ -407,37 +535,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error(err);
                 alert('Could not load item details. Refresh and try again.');
             }
-        });
-    });
-
-    // ORDER NOW buttons - simple redirect to checkout
-    document.querySelectorAll('.order-now-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const itemId = btn.dataset.id;
-            // Simple form submission - Laravel will handle authentication
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/checkout';
-            
-            // Add CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            if (csrfToken) {
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = csrfToken;
-                form.appendChild(csrfInput);
-            }
-            
-            // Add item ID
-            const itemInput = document.createElement('input');
-            itemInput.type = 'hidden';
-            itemInput.name = 'item_id';
-            itemInput.value = itemId;
-            form.appendChild(itemInput);
-            
-            document.body.appendChild(form);
-            form.submit();
         });
     });
 
@@ -463,6 +560,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (qtyInput) qtyInput.value = 1;
         if (document.getElementById('cuisinePrefNoOnion')) document.getElementById('cuisinePrefNoOnion').checked = false;
         if (document.getElementById('cuisinePrefNoCrayfish')) document.getElementById('cuisinePrefNoCrayfish').checked = false;
+        if (document.getElementById('cuisinePrefExtraSpicy')) document.getElementById('cuisinePrefExtraSpicy').checked = false;
+        if (document.getElementById('cuisineDeliveryType')) document.getElementById('cuisineDeliveryType').value = '';
 
         // render addons (plus/minus)
         const list = document.getElementById('cuisineAddonsList');
@@ -530,6 +629,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const qtyInput = document.getElementById('drinksQtyInput');
         if (qtyInput) qtyInput.value = 1;
+        
+        // Reset drink preferences
+        if (document.getElementById('drinksPrefLessIce')) document.getElementById('drinksPrefLessIce').checked = false;
+        if (document.getElementById('drinksPrefNoIce')) document.getElementById('drinksPrefNoIce').checked = false;
+        if (document.getElementById('drinksPrefExtraLemon')) document.getElementById('drinksPrefExtraLemon').checked = false;
+        if (document.getElementById('drinksDeliveryType')) document.getElementById('drinksDeliveryType').value = '';
+
         window._drinks = {
             id: item.id,
             name: item.name,
@@ -553,8 +659,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const qtyInput = document.getElementById('grillQtyInput');
         if (qtyInput) qtyInput.value = 1;
+        
+        // Reset grill preferences
         if (document.getElementById('grillPrefNoOnion')) document.getElementById('grillPrefNoOnion').checked = false;
         if (document.getElementById('grillPrefNoVeg')) document.getElementById('grillPrefNoVeg').checked = false;
+        if (document.getElementById('grillPrefWellDone')) document.getElementById('grillPrefWellDone').checked = false;
+        if (document.getElementById('grillPrefExtraSauce')) document.getElementById('grillPrefExtraSauce').checked = false;
+        if (document.getElementById('grillDeliveryType')) document.getElementById('grillDeliveryType').value = '';
 
         const list = document.getElementById('grillAddonsList');
         if (list) {
@@ -715,6 +826,21 @@ document.addEventListener('DOMContentLoaded', function () {
             const visible = document.querySelector('.modal.show');
             if (!visible) return alert('No modal active');
 
+            // Validate delivery type
+            let deliveryType = '';
+            if (visible.id === 'modalDrinks') {
+                deliveryType = document.getElementById('drinksDeliveryType').value;
+            } else if (visible.id === 'modalGrill') {
+                deliveryType = document.getElementById('grillDeliveryType').value;
+            } else {
+                deliveryType = document.getElementById('cuisineDeliveryType').value;
+            }
+
+            if (!deliveryType) {
+                alert('Please select a delivery type');
+                return;
+            }
+
             // build order payload depending on visible modal
             let payload = {
                 item_name: '',
@@ -724,20 +850,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 addons: [],
                 preferences: [],
                 category: '',
-                delivery_type: 'Unspecified'
+                delivery_type: deliveryType
             };
-
-            // helper to read delivery radio inside visible modal
-            function readDeliveryFromModal(el) {
-                if (!el) return 'Unspecified';
-
-                const select =
-                    el.querySelector('#cuisineDeliveryType') ||
-                    el.querySelector('#drinksDeliveryType') ||
-                    el.querySelector('#grillDeliveryType');
-
-                return select ? select.value : 'Unspecified';
-            }
 
             if (visible.id === 'modalDrinks') {
                 const name = document.getElementById('drinksItemName').textContent;
@@ -750,8 +864,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 payload.total_display = totalDisplay;
                 payload.total_amount = totalAmt;
                 payload.addons = [];
-                payload.preferences = [];
-                payload.delivery_type = readDeliveryFromModal(visible);
+                
+                // Drink preferences
+                if (document.getElementById('drinksPrefLessIce') && document.getElementById('drinksPrefLessIce').checked) 
+                    payload.preferences.push('Less ice');
+                if (document.getElementById('drinksPrefNoIce') && document.getElementById('drinksPrefNoIce').checked) 
+                    payload.preferences.push('No ice');
+                if (document.getElementById('drinksPrefExtraLemon') && document.getElementById('drinksPrefExtraLemon').checked) 
+                    payload.preferences.push('Extra lemon');
+                
                 payload.category = (window._drinks && window._drinks.category) || 'drinks';
 
             } else if (visible.id === 'modalGrill') {
@@ -765,6 +886,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 payload.total_display = totalDisplay;
                 payload.total_amount = totalAmt;
                 payload.addons = [];
+                
+                // Grill addons
                 document.querySelectorAll('#grillAddonsList .addon-qty').forEach(i => {
                     const q = Number(i.value || 0);
                     if (q > 0) {
@@ -774,9 +897,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         payload.addons.push({id, name: nameA, qty: q, price: price});
                     }
                 });
-                if (document.getElementById('grillPrefNoOnion') && document.getElementById('grillPrefNoOnion').checked) payload.preferences.push('No onion');
-                if (document.getElementById('grillPrefNoVeg') && document.getElementById('grillPrefNoVeg').checked) payload.preferences.push('No vegetables');
-                payload.delivery_type = readDeliveryFromModal(visible);
+                
+                // Grill preferences
+                if (document.getElementById('grillPrefNoOnion') && document.getElementById('grillPrefNoOnion').checked) 
+                    payload.preferences.push('No onion');
+                if (document.getElementById('grillPrefNoVeg') && document.getElementById('grillPrefNoVeg').checked) 
+                    payload.preferences.push('No vegetables');
+                if (document.getElementById('grillPrefWellDone') && document.getElementById('grillPrefWellDone').checked) 
+                    payload.preferences.push('Well done');
+                if (document.getElementById('grillPrefExtraSauce') && document.getElementById('grillPrefExtraSauce').checked) 
+                    payload.preferences.push('Extra sauce');
+                
                 payload.category = (window._grill && window._grill.category) || 'grill';
 
             } else {
@@ -791,6 +922,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 payload.total_display = totalDisplay;
                 payload.total_amount = totalAmt;
                 payload.addons = [];
+                
+                // Cuisine addons
                 document.querySelectorAll('#cuisineAddonsList .addon-qty').forEach(i => {
                     const q = Number(i.value || 0);
                     if (q > 0) {
@@ -800,9 +933,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         payload.addons.push({id, name: nameA, qty: q, price: price});
                     }
                 });
-                if (document.getElementById('cuisinePrefNoOnion') && document.getElementById('cuisinePrefNoOnion').checked) payload.preferences.push('No onion');
-                if (document.getElementById('cuisinePrefNoCrayfish') && document.getElementById('cuisinePrefNoCrayfish').checked) payload.preferences.push('No crayfish');
-                payload.delivery_type = readDeliveryFromModal(visible);
+                
+                // Cuisine preferences
+                if (document.getElementById('cuisinePrefNoOnion') && document.getElementById('cuisinePrefNoOnion').checked) 
+                    payload.preferences.push('No onion');
+                if (document.getElementById('cuisinePrefNoCrayfish') && document.getElementById('cuisinePrefNoCrayfish').checked) 
+                    payload.preferences.push('No crayfish');
+                if (document.getElementById('cuisinePrefExtraSpicy') && document.getElementById('cuisinePrefExtraSpicy').checked) 
+                    payload.preferences.push('Extra spicy');
+                
                 payload.category = (window._cuisine && window._cuisine.category) || 'cuisine';
             }
 
@@ -852,9 +991,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-
-
-
 @endpush
 
 @endsection

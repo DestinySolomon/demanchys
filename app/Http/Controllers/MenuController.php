@@ -13,8 +13,9 @@ class MenuController extends Controller
     public function index(Request $request)
     {
 
-         return view('menu.index', ['categories' => []]);
+       
         // load categories + items (eager load)
+        
         $categories = MenuCategory::with(['items' => function($q){
             $q->orderBy('created_at','desc');
         }])->orderBy('id')->get();

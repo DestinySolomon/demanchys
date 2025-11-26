@@ -18,10 +18,8 @@ require __DIR__.'/auth.php';
 
 //Admind Dashboard Route
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return view('admin.dashboard.index');
 })->middleware(['auth'])->name('dashboard');
-
-
 // User Dashboard
 Route::get('/my-account', function () {
     return view('user-dashboard');
@@ -71,3 +69,18 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::post('/checkout/submit', [CheckoutController::class, 'submit'])->name('checkout.submit');
+
+
+
+// TEMPORARY ROUTE - CHECK MENU DATA (REMOVE AFTER)
+Route::get('/check-menu-data', function () {
+    $categoryCount = \App\Models\MenuCategory::count();
+    $itemCount = \App\Models\MenuItem::count();
+    $addOnCount = \App\Models\AddOn::count();
+    
+    return [
+        'categories' => $categoryCount,
+        'menu_items' => $itemCount,
+        'add_ons' => $addOnCount
+    ];
+});
