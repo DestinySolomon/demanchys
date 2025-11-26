@@ -34,9 +34,7 @@ class RedirectAfterAuth
         return $response;
     }
 
-    /**
-     * Check if user is an admin (you can modify this logic later)
-     */
+    
          private function isAdmin($user): bool
           {
                return $user->isAdmin();

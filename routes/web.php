@@ -59,6 +59,12 @@ Route::middleware('auth')->group(function () {
     
     // ADMIN ROUTES
     Route::prefix('admin')->group(function () {
+            //categories Management
+            Route::get('/categories', function () {
+               return view('admin.categories.index');
+              })->name('admin.categories.index');
+    
+
         Route::get('/events', [EventController::class, 'adminIndex'])->name('admin.events.index');
         Route::get('/events/create', [EventController::class, 'create'])->name('admin.events.create');
         Route::post('/events/store', [EventController::class, 'store'])->name('admin.events.store');

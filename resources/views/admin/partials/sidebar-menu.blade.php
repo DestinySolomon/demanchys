@@ -17,12 +17,12 @@
         </a>
         <div class="collapse" id="menuCollapse">
             <ul class="list-unstyled ms-4 mt-2">
-                <li class="mb-2">
-                    <a href="#" class="sidebar-submenu-item">
-                        <i class="bi bi-tags me-2"></i>
-                        <span>Categories</span>
-                    </a>
-                </li>
+                         <li class="mb-2">
+                    <a href="{{ route('admin.categories.index') }}" class="sidebar-submenu-item">
+                          <i class="bi bi-tags me-2"></i>
+                          <span>Categories</span>
+                        </a>
+               </li>
                 <li class="mb-2">
                     <a href="#" class="sidebar-submenu-item">
                         <i class="bi bi-cup-straw me-2"></i>

@@ -11,13 +11,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     
     <style>
-        :root {
-            --sidebar-width: 250px;
-            --sidebar-collapsed: 80px;
-            --topbar-height: 60px;
-            --primary-color: #ffc107;
-            --dark-bg: #1a1d29;
-            --darker-bg: #151824;
+           :root {
+          --sidebar-width: 250px;
+          --sidebar-collapsed: 80px;
+           --topbar-height: 60px;
+           --primary-color: #ffc107; /* Gold */
+            --sidebar-bg: #ffffff; /* White */
+                  --sidebar-text: #2d3748; /* Dark gray/black */
         }
         
         body {
@@ -29,31 +29,40 @@
         
         /* Sidebar Styles */
         .sidebar {
-            width: var(--sidebar-width);
-            height: 100vh;
-            background: var(--dark-bg);
-            position: fixed;
-            left: 0;
-            top: 0;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            overflow-x: hidden;
-            border-right: 1px solid #2d3748;
-        }
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: var(--sidebar-bg); /* Changed to white */
+    position: fixed;
+    left: 0;
+    top: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    overflow-x: hidden;
+    border-right: 1px solid #e2e8f0; /* Light border */
+}
         
         .sidebar.collapsed {
             width: var(--sidebar-collapsed);
         }
         
-        .sidebar-header {
-            padding: 1rem;
-            border-bottom: 1px solid #2d3748;
-            height: var(--topbar-height);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+               .sidebar-header {
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0; /* Light border */
+    height: var(--topbar-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand-text {
+    color: var(--sidebar-text); /* Black text */
+    font-weight: 600;
+    font-size: 1.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 0.3s ease;
+}
         
         .logo-container {
             display: flex;
@@ -274,6 +283,71 @@
                 margin-left: 0 !important;
             }
         }
+
+  
+
+        .sidebar-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: var(--sidebar-text); /* Black text */
+    text-decoration: none;
+    border-radius: 6px;
+    margin: 0 0.5rem 0.25rem 0.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.sidebar-menu-item:hover {
+    background: #fff9e6; /* Light gold background */
+    color: var(--sidebar-text);
+    transform: translateX(5px);
+}
+
+.sidebar-menu-item.active {
+    background: var(--primary-color); /* Gold */
+    color: #000;
+    font-weight: 600;
+}
+
+.sidebar-menu-item i:first-child {
+    width: 20px;
+    text-align: center;
+    color: var(--primary-color); /* Gold icons */
+}
+
+
+
+.sidebar-submenu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    color: var(--sidebar-text); /* Black text */
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    border-left: 2px solid transparent;
+}
+
+.sidebar-submenu-item:hover {
+    background: #fff9e6; /* Light gold background */
+    color: var(--sidebar-text);
+    transform: translateX(3px);
+    border-left: 2px solid var(--primary-color); /* Gold border */
+}
+
+.sidebar-submenu-item.active {
+    background: var(--primary-color); /* Gold */
+    color: #000;
+    font-weight: 600;
+    border-left: 2px solid var(--primary-color);
+}
+
+.sidebar-submenu-item i {
+    color: var(--primary-color); /* Gold icons */
+    font-size: 0.8rem;
+}
     </style>
 </head>
 <body>
@@ -282,7 +356,7 @@
         <div class="sidebar-header">
             <div class="logo-container">
                 <div class="logo">DL</div>
-                <span class="brand-text">Demanchys Lounge</span>
+                <span class="brand-text text-dark">Demanchys Lounge</span>
             </div>
         </div>
         
