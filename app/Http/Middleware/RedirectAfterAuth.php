@@ -12,27 +12,37 @@ class RedirectAfterAuth
     /**
      * Handle an incoming request.
      */
-    public function handle(Request $request, Closure $next): Response
-    {
-        $response = $next($request);
+     public function handle(Request $request, Closure $next): Response
+{
+    $response = $next($request);
 
-        // Check if user is authenticated and visiting certain pages
-        if (Auth::check()) {
-            $currentRoute = $request->route()->getName();
-            
-            // Redirect away from these routes to user dashboard
-            if (in_array($currentRoute, ['login', 'register', 'home'])) {
-                return redirect()->route('user.dashboard');
-            }
-            
-            // If user tries to access admin dashboard but isn't an admin, redirect to user dashboard
-            if ($currentRoute === 'dashboard' && !$this->isAdmin($request->user())) {
-                return redirect()->route('user.dashboard');
+    // Check if user is authenticated and visiting certain pages
+    if (Auth::check()) {
+        $currentRoute = $request->route()->getName();
+        $user = $request->user();
+        
+        // Redirect away from auth pages when already logged in
+        if (in_array($currentRoute, ['login', 'register'])) {
+            if ($this->isAdmin($user)) {
+                return redirect()->route('dashboard'); // Admin to admin dashboard
+            } else {
+                return redirect()->route('user.dashboard'); // User to user dashboard
             }
         }
-
-        return $response;
+        
+        // If user tries to access admin dashboard but isn't an admin, redirect to user dashboard
+        if ($currentRoute === 'dashboard' && !$this->isAdmin($user)) {
+            return redirect()->route('user.dashboard');
+        }
+        
+        // If admin tries to access user dashboard, redirect to admin dashboard
+        if ($currentRoute === 'user.dashboard' && $this->isAdmin($user)) {
+            return redirect()->route('dashboard');
+        }
     }
+
+    return $response;
+}
 
     
          private function isAdmin($user): bool

@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 // Include Breeze authentication routes FIRST
 require __DIR__.'/auth.php';
 
-//Admind Dashboard Route
+//Admin Dashboard Route
 Route::get('/dashboard', function () {
     return view('admin.dashboard.index');
 })->middleware(['auth'])->name('dashboard');
@@ -59,11 +59,23 @@ Route::middleware('auth')->group(function () {
     
     // ADMIN ROUTES
     Route::prefix('admin')->group(function () {
-            //categories Management
-            Route::get('/categories', function () {
-               return view('admin.categories.index');
-              })->name('admin.categories.index');
+          
+      
+                  // Categories Management - KEEP ONLY THIS ONE
+    Route::get('/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('admin.categories.index');
+    Route::post('/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'store'])->name('admin.categories.store');
+    Route::put('/categories/{id}', [\App\Http\Controllers\Admin\CategoryController::class, 'update'])->name('admin.categories.update');
+    Route::delete('/categories/{id}', [\App\Http\Controllers\Admin\CategoryController::class, 'destroy'])->name('admin.categories.destroy');
     
+     // SECURE MENU ITEMS ROUTES
+    Route::get('/menu-items', [\App\Http\Controllers\Admin\MenuItemController::class, 'index'])->name('admin.menu-items.index');
+    Route::get('/menu-items/create', [\App\Http\Controllers\Admin\MenuItemController::class, 'create'])->name('admin.menu-items.create');
+    Route::post('/menu-items', [\App\Http\Controllers\Admin\MenuItemController::class, 'store'])->name('admin.menu-items.store');
+    Route::get('/menu-items/{id}/edit', [\App\Http\Controllers\Admin\MenuItemController::class, 'edit'])->name('admin.menu-items.edit');
+    Route::put('/menu-items/{id}', [\App\Http\Controllers\Admin\MenuItemController::class, 'update'])->name('admin.menu-items.update');
+    Route::delete('/menu-items/{id}', [\App\Http\Controllers\Admin\MenuItemController::class, 'destroy'])->name('admin.menu-items.destroy');
+
+
 
         Route::get('/events', [EventController::class, 'adminIndex'])->name('admin.events.index');
         Route::get('/events/create', [EventController::class, 'create'])->name('admin.events.create');
@@ -78,15 +90,15 @@ Route::post('/checkout/submit', [CheckoutController::class, 'submit'])->name('ch
 
 
 
-// TEMPORARY ROUTE - CHECK MENU DATA (REMOVE AFTER)
-Route::get('/check-menu-data', function () {
-    $categoryCount = \App\Models\MenuCategory::count();
-    $itemCount = \App\Models\MenuItem::count();
-    $addOnCount = \App\Models\AddOn::count();
+// // TEMPORARY ROUTE - CHECK MENU DATA (REMOVE AFTER)
+// Route::get('/check-menu-data', function () {
+//     $categoryCount = \App\Models\MenuCategory::count();
+//     $itemCount = \App\Models\MenuItem::count();
+//     $addOnCount = \App\Models\AddOn::count();
     
-    return [
-        'categories' => $categoryCount,
-        'menu_items' => $itemCount,
-        'add_ons' => $addOnCount
-    ];
-});
+//     return [
+//         'categories' => $categoryCount,
+//         'menu_items' => $itemCount,
+//         'add_ons' => $addOnCount
+//     ];
+// });

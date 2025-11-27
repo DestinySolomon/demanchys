@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MenuCategory extends Model
 {
-    protected $fillable = ['name','slug','description'];
+    // include 'image' because controller stores the path on create/update
+    protected $fillable = ['name','slug','description','image'];
 
     public function items(): HasMany
     {

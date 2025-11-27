@@ -413,10 +413,41 @@
     </div>
 
     <!-- Bootstrap & jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+    <!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
+
+
+
+
+         // Test if Bootstrap is loaded
+    console.log('Bootstrap loaded:', typeof bootstrap !== 'undefined');
+    console.log('Modal component:', typeof bootstrap?.Modal !== 'undefined');
+    
+    // Simple modal test
+    window.testModal = function() {
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const modal = new bootstrap.Modal(document.getElementById('deleteCategoryModal'));
+            modal.show();
+            console.log('Bootstrap modal shown successfully!');
+        } else {
+            console.log('Bootstrap not available');
+            // Fallback - show modal manually
+            const modal = document.getElementById('deleteCategoryModal');
+            modal.style.display = 'block';
+            modal.classList.add('show');
+            modal.style.background = 'rgba(0,0,0,0.5)';
+        }
+    }
+
+
+
+
+
+
         // Sidebar toggle functionality
         document.getElementById('sidebarToggle').addEventListener('click', function() {
             const sidebar = document.getElementById('sidebar');
@@ -452,5 +483,7 @@
             }
         });
     </script>
+
+      @stack('scripts')
 </body>
 </html>
