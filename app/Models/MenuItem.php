@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Models\MenuCategory;
 use App\Models\AddOn;
+
 class MenuItem extends Model
 {
     use HasFactory;
@@ -24,11 +25,10 @@ class MenuItem extends Model
         'slug',
         'description',
         'price',
-        'availability',
+        'is_available',
         'is_featured',
         'sort_order',
         'image',
-        'thumbnail',
     ];
 
     /**
@@ -37,7 +37,7 @@ class MenuItem extends Model
      */
     protected $casts = [
         'price' => 'decimal:2',
-        'availability' => 'boolean',
+        'is_available' => 'boolean',
         'is_featured' => 'boolean',
         'sort_order' => 'integer',
     ];
@@ -68,35 +68,37 @@ class MenuItem extends Model
      */
     public function getImageUrlAttribute(): ?string
     {
-    if (!$this->image) {
-        return null;
-    }
+        $file = $this->image;
+
+        if (!$file) {
+            return null;
+        }
     
-    try {
-        // Check if file exists in storage
-        if (Storage::disk('public')->exists($this->image)) {
-            return asset('storage/' . $this->image);
-        }
-        
-        // Fallback: check if it's already a full URL (for migrated data)
-        if (filter_var($this->image, FILTER_VALIDATE_URL)) {
-            return $this->image;
-        }
-        
-        return null;
+        try {
+            // Check if file exists in storage
+            if (Storage::disk('public')->exists($file)) {
+                return asset('storage/' . $file);
+            }
+            
+            // Fallback: check if it's already a full URL (for migrated data)
+            if (filter_var($file, FILTER_VALIDATE_URL)) {
+                return $file;
+            }
+            
+            return null;
         } catch (\Exception $e) {
             // Log error and return null (fail gracefully)
             Log::error('Error generating image URL for menu item: ' . $e->getMessage());
             return null;
         }
-}
+    }
 
     /**
      * Scope: Available items only
      */
     public function scopeAvailable($query)
     {
-        return $query->where('availability', true);
+        return $query->where('is_available', true);
     }
 
     /**
@@ -105,7 +107,7 @@ class MenuItem extends Model
     public function scopeFeatured($query)
     {
         return $query->where('is_featured', true)
-                ->where('availability', true);
+                    ->where('is_available', true);
     }
 
     /**

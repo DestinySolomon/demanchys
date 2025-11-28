@@ -85,8 +85,35 @@
                         @enderror
                     </div>
 
-                    <!-- Image -->
+                    <!-- Availability Toggle -->
                     <div class="col-md-4 mb-3">
+                        <label class="form-label">Availability</label>
+                                <div class="form-check form-switch">
+    <input type="hidden" name="is_available" value="0">
+
+    <input class="form-check-input" 
+           type="checkbox" 
+           id="is_available" 
+           name="is_available" 
+           value="1"
+           {{ old('is_available', $menuItem->is_available) ? 'checked' : '' }}>
+
+    <label class="form-check-label" for="is_available">
+        <span id="availabilityStatus">
+            {{ $menuItem->is_available ? 'Available' : 'Unavailable' }}
+        </span>
+    </label>
+</div>
+
+                        @error('is_available')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Image -->
+                    <div class="col-md-6 mb-3">
                         <label for="image" class="form-label">Item Image</label>
                         <input type="file" class="form-control @error('image') is-invalid @enderror" 
                                id="image" name="image" accept="image/*">
@@ -108,40 +135,32 @@
                             </div>
                         @endif
                     </div>
-                </div>
 
-<!-- Availability Toggle -->
-<div class="col-md-4 mb-3">
-    <label class="form-label">Availability</label>
-    <div class="form-check form-switch">
-         {{-- Hidden first so unchecked submits 0; checkbox will override when checked --}}
-         <input type="hidden" name="availability" value="0">
-         <input class="form-check-input" type="checkbox" 
-             id="availability" name="availability" value="1"
-             {{ old('availability', $menuItem->availability) ? 'checked' : '' }}>
-        <label class="form-check-label" for="availability">
-            <span id="availabilityStatus">
-                {{ $menuItem->availability ? 'Available' : 'Unavailable' }}
-            </span>
-        </label>
-    </div>
-    @error('availability')
-        <div class="invalid-feedback d-block">{{ $message }}</div>
-    @enderror
-</div>
-
-                    {{-- <!-- Featured -->
-                    <div class="col-md-4 mb-3">
+                    <!-- Featured Toggle -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Featured Item</label>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" 
-                                   id="is_featured" name="is_featured" value="1"
-                                   {{ old('is_featured', $menuItem->is_featured) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="is_featured">
-                                Featured item
-                            </label>
-                        </div>
+                      <input type="hidden" name="is_featured" value="0">
+
+                       <input class="form-check-input" 
+                      type="checkbox" 
+                     id="is_featured" 
+                     name="is_featured" 
+                      value="1"
+                          {{ old('is_featured', $menuItem->is_featured) ? 'checked' : '' }}>
+
+                      <label class="form-check-label" for="is_featured">
+                    <span id="featuredStatus">
+                          {{ $menuItem->is_featured ? 'Featured' : 'Regular' }}
+                          </span>
+                       </label>
+                       </div>
+
+                        @error('is_featured')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
                     </div>
-                </div> --}}
+                </div>
 
                 <!-- Form Actions -->
                 <div class="d-flex justify-content-end gap-2">
@@ -157,18 +176,32 @@
     </div>
 </div>
 
-
-
-
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const availabilityToggle = document.getElementById('availability');
+        // Availability toggle
+        const availabilityToggle = document.getElementById('is_available');
         const availabilityStatus = document.getElementById('availabilityStatus');
+
+        // Update availability status text when the toggle changes
+
         
         if (availabilityToggle && availabilityStatus) {
             availabilityToggle.addEventListener('change', function() {
                 availabilityStatus.textContent = this.checked ? 'Available' : 'Unavailable';
+            });
+        }
+
+
+        
+
+        // Featured toggle
+        const featuredToggle = document.getElementById('is_featured');
+        const featuredStatus = document.getElementById('featuredStatus');
+        
+        if (featuredToggle && featuredStatus) {
+            featuredToggle.addEventListener('change', function() {
+                featuredStatus.textContent = this.checked ? 'Featured' : 'Regular';
             });
         }
     });

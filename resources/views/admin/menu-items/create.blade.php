@@ -73,23 +73,22 @@
                         @enderror
                     </div>
 
-                          <!-- Availability Toggle -->
-<div class="col-md-4 mb-3">
-    <label class="form-label">Availability</label>
-    <div class="form-check form-switch">
-         {{-- Hidden first so unchecked submits 0; checkbox will override when checked --}}
-         <input type="hidden" name="availability" value="0">
-         <input class="form-check-input" type="checkbox" 
-             id="availability" name="availability" value="1"
-             {{ old('availability', 1) ? 'checked' : '' }}>
-        <label class="form-check-label" for="availability">
-            <span id="availabilityStatus">Available</span>
-        </label>
-    </div>
-    @error('availability')
-        <div class="invalid-feedback d-block">{{ $message }}</div>
-    @enderror
-</div>
+                    <!-- Availability Toggle -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Availability</label>
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="is_available" value="0">
+                            <input class="form-check-input" type="checkbox" 
+                                   id="is_available" name="is_available" value="1"
+                                   {{ old('is_available', 1) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="is_available">
+                                <span id="availabilityStatus">{{ old('is_available', 1) ? 'Available' : 'Unavailable' }}</span>
+                            </label>
+                        </div>
+                        @error('is_available')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
 
                     <!-- Image -->
                     <div class="col-md-4 mb-3">
@@ -117,15 +116,17 @@
     </div>
 </div>
 
-
-
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const availabilityToggle = document.getElementById('availability');
+        const availabilityToggle = document.getElementById('is_available');
         const availabilityStatus = document.getElementById('availabilityStatus');
         
         if (availabilityToggle && availabilityStatus) {
+            // Set initial status
+            availabilityStatus.textContent = availabilityToggle.checked ? 'Available' : 'Unavailable';
+            
+            // Update on change
             availabilityToggle.addEventListener('change', function() {
                 availabilityStatus.textContent = this.checked ? 'Available' : 'Unavailable';
             });
@@ -133,5 +134,4 @@
     });
 </script>
 @endpush
-
 @endsection

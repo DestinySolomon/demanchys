@@ -43,24 +43,27 @@
                     <tbody>
                         @foreach($menuItems as $item)
                         <tr>
-                            <td class="text-center">
-                                @if($item->image_url)
-                                    <img src="{{ $item->image_url }}" 
-                                         alt="{{ $item->name }}" 
-                                         class="rounded" 
-                                         style="width: 50px; height: 50px; object-fit: cover;"
-                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" 
-                                         style="width: 50px; height: 50px; display: none;">
-                                        <i class="bi bi-image text-muted"></i>
-                                    </div>
-                                @else
-                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" 
-                                         style="width: 50px; height: 50px;">
-                                        <i class="bi bi-image text-muted"></i>
-                                    </div>
-                                @endif
-                            </td>
+
+
+                          <td class="text-center">
+                      @if($item->image)
+                   <img src="{{ Storage::disk('public')->url($item->image) }}" 
+                    alt="{{ $item->name }}" 
+                 class="rounded" 
+                  style="width: 50px; height: 50px; object-fit: cover;"
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                         <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                        style="width: 50px; height: 50px; display: none;">
+                         <i class="bi bi-image text-muted"></i>
+                               </div>
+                  @else
+                     <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                          style="width: 50px; height: 50px;">
+                     <i class="bi bi-image text-muted"></i>
+                            </div>
+                          @endif
+                       </td>
+                       
                             <td>
                                 <strong>{{ $item->name }}</strong>
                                 @if($item->description)
@@ -73,13 +76,17 @@
                             <td>
                                 <strong>₦{{ number_format($item->price, 2) }}</strong>
                             </td>
-                            <td>
-                                @if($item->availability)
-                                    <span class="badge bg-success">Available</span>
-                                @else
-                                    <span class="badge bg-danger">Unavailable</span>
-                                @endif
-                            </td>
+
+
+      <td>
+    Raw DB: {{ $item->getRawOriginal('is_available') }} | 
+    Accessor: {{ $item->is_available }} |
+    @if($item->is_available == 1)
+        <span class="badge bg-success">Available</span>
+    @else
+        <span class="badge bg-danger">Unavailable</span>
+    @endif
+</td>
                             <td>
                                 @if($item->is_featured)
                                     <span class="badge bg-warning text-dark">Featured</span>
@@ -102,6 +109,7 @@
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </td>
+
                         </tr>
                         @endforeach
                     </tbody>
@@ -149,6 +157,16 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
 
 @push('scripts')
 <script>

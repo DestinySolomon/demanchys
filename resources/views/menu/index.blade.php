@@ -241,7 +241,7 @@
             @forelse($category->items as $item)
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                     <div class="menu-card">
-                        <img src="{{ asset($item->image ? 'storage/'.$item->image : 'assets/placeholder_food.jpg') }}" alt="{{ $item->name }}">
+                        <img src="{{ $item->image_url ?? asset('assets/placeholder_food.jpg') }}" alt="{{ $item->name }}">
                         <div class="menu-card-body">
                             @if(!empty($item->availability))
                                 <span class="availability-tag {{ strtolower($item->availability) === 'daily' ? 'daily' : 'ondemand' }}">
