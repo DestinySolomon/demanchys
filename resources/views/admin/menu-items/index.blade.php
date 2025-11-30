@@ -7,19 +7,10 @@
         <h1 class="h3 mb-0 text-gray-800">Menu Items Management</h1>
         <a href="{{ route('admin.menu-items.create') }}" class="btn btn-primary shadow-sm">
             <i class="bi bi-plus-circle me-2"></i>Add New Item
-        </a>
-    </div>
+                </a>
+            </div>
 
-    <!-- Success Message -->
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    <!-- Menu Items Table -->
+            <!-- Menu Items Table -->
     <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">All Menu Items ({{ $menuItems->count() }})</h6>
@@ -47,21 +38,17 @@
 
                           <td class="text-center">
                       @if($item->image)
-                   <img src="{{ Storage::disk('public')->url($item->image) }}" 
-                    alt="{{ $item->name }}" 
-                 class="rounded" 
-                  style="width: 50px; height: 50px; object-fit: cover;"
-                   onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                         <div class="bg-light rounded d-flex align-items-center justify-content-center" 
-                        style="width: 50px; height: 50px; display: none;">
-                         <i class="bi bi-image text-muted"></i>
-                               </div>
-                  @else
-                     <div class="bg-light rounded d-flex align-items-center justify-content-center" 
-                          style="width: 50px; height: 50px;">
-                     <i class="bi bi-image text-muted"></i>
-                            </div>
-                          @endif
+                        <img src="{{ Storage::disk('public')->url($item->image) }}"
+                            alt="{{ $item->name }}"
+                            class="rounded"
+                            style="width: 50px; height: 50px; object-fit: cover;"
+                            onerror="this.onerror=null; this.src='{{ asset('assets/placeholder_food.jpg') }}'">
+                      @else
+                        <img src="{{ asset('assets/placeholder_food.jpg') }}"
+                            alt="placeholder"
+                            class="rounded bg-light d-flex align-items-center justify-content-center"
+                            style="width: 50px; height: 50px; object-fit: cover;">
+                      @endif
                        </td>
                        
                             <td>
@@ -77,16 +64,16 @@
                                 <strong>₦{{ number_format($item->price, 2) }}</strong>
                             </td>
 
+                            <td class="text-center">
+                                @if($item->is_available)
+                                    <span class="badge bg-success">Available</span>
+                                @else
+                                    <span class="badge bg-danger">Unavailable</span>
+                                @endif
+                            </td>
 
-      <td>
-    Raw DB: {{ $item->getRawOriginal('is_available') }} | 
-    Accessor: {{ $item->is_available }} |
-    @if($item->is_available == 1)
-        <span class="badge bg-success">Available</span>
-    @else
-        <span class="badge bg-danger">Unavailable</span>
-    @endif
-</td>
+
+    
                             <td>
                                 @if($item->is_featured)
                                     <span class="badge bg-warning text-dark">Featured</span>
@@ -94,10 +81,10 @@
                                     <span class="badge bg-light text-muted">Regular</span>
                                 @endif
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <span class="badge bg-info">{{ $item->sort_order }}</span>
                             </td>
-                            <td>
+                            <td class="text-center text-nowrap">
                                 <a href="{{ route('admin.menu-items.edit', $item->id) }}" 
                                    class="btn btn-sm btn-warning me-1" title="Edit">
                                     <i class="bi bi-pencil"></i>

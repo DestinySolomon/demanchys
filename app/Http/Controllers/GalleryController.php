@@ -18,26 +18,11 @@ class GalleryController extends Controller
             $query->where('category', $category);
         }
 
-        $images = $query->orderBy('id', 'desc')->paginate(12);
+        $images = $query->orderBy('created_at', 'desc')->paginate(12);
+        
+        // Use the same categories as admin
+        $categories = GalleryImage::CATEGORIES;
 
-        return view('gallery', compact('images', 'category'));
-    }
-
-    // Upload image
-    public function store(Request $request)
-    {
-        $request->validate([
-            'image'    => 'required|image|mimes:jpg,png,jpeg,webp|max:2048',
-            'category' => 'required|string',
-        ]);
-
-        $path = $request->file('image')->store('gallery', 'public');
-
-        GalleryImage::create([
-            'image_path' => $path,
-            'category'   => $request->category,
-        ]);
-
-        return back()->with('success', 'Image uploaded successfully.');
+        return view('gallery', compact('images', 'category', 'categories'));
     }
 }

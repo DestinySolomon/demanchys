@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Models\MenuCategory;
-use App\Models\AddOn;
+
 
 class MenuItem extends Model
 {
@@ -53,12 +53,13 @@ class MenuItem extends Model
     /**
      * Relationship: Menu item has many add-ons
      */
+
     public function addons(): BelongsToMany
-    {
-        return $this->belongsToMany(AddOn::class, 'menu_item_add_on')
-                    ->withPivot('additional_price')
-                    ->withTimestamps();
-    }
+{
+    return $this->belongsToMany(AddOn::class, 'menu_item_add_on')
+                ->withPivot('additional_price')
+                ->withTimestamps();
+}
 
     /**
      * Accessor: Get full image URL securely

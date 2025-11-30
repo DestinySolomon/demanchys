@@ -21,9 +21,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'address',
+        'role'
     ];
 
-      public function isAdmin(): bool
+    public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
@@ -48,6 +51,27 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+        ];
+    }
+
+    /**
+     * Get the orders for the user.
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Get user's order statistics
+     */
+    public function getOrderStatistics()
+    {
+        return [
+            'active' => $this->orders()->where('order_status', 'pending')->count(),
+            'pending' => $this->orders()->where('order_status', 'pending')->count(),
+            'completed' => $this->orders()->where('order_status', 'completed')->count(),
+            'cancelled' => $this->orders()->where('order_status', 'cancelled')->count(),
         ];
     }
 }

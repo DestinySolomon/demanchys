@@ -63,8 +63,8 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link text-white {{ request()->routeIs('events') ? 'active text-warning fw-bold' : '' }}"
-                       href="{{ route('events') }}">Events</a>
+                    <a class="nav-link text-white {{ request()->routeIs('events.*') ? 'active text-warning fw-bold' : '' }}"
+                       href="{{ route('events.index') }}">Events</a>
                 </li>
 
                 <li class="nav-item">
@@ -114,8 +114,8 @@
         </li>
 
         <li class="nav-item my-2">
-            <a class="nav-link text-white {{ request()->routeIs('events') ? 'text-warning fw-bold' : '' }}"
-               href="{{ route('events') }}">Events</a>
+            <a class="nav-link text-white {{ request()->routeIs('events.*') ? 'text-warning fw-bold' : '' }}"
+               href="{{ route('events.index') }}">Events</a>
         </li>
 
         <li class="nav-item my-2">
