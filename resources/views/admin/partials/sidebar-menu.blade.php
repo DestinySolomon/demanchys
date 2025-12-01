@@ -88,9 +88,21 @@
     <div class="collapse {{ request()->routeIs('admin.delivery.*') ? 'show' : '' }}" id="deliveryCollapse">
         <ul class="list-unstyled ms-4 mt-2">
             <li class="mb-2">
+                <a href="{{ route('admin.delivery.pending') }}" class="sidebar-submenu-item {{ request()->routeIs('admin.delivery.pending') ? 'active' : '' }}">
+                    <i class="bi bi-clock me-2"></i>
+                    <span>Pending Applications</span>
+                </a>
+            </li>
+            <li class="mb-2">
                 <a href="{{ route('admin.delivery.index') }}" class="sidebar-submenu-item {{ request()->routeIs('admin.delivery.index') ? 'active' : '' }}">
                     <i class="bi bi-list-ul me-2"></i>
-                    <span>Delivery Man List</span>
+                    <span>Active Delivery Men</span>
+                </a>
+            </li>
+            <li class="mb-2">
+                <a href="{{ route('admin.delivery.rejected') }}" class="sidebar-submenu-item {{ request()->routeIs('admin.delivery.rejected') ? 'active' : '' }}">
+                    <i class="bi bi-x-circle me-2"></i>
+                    <span>Rejected Applications</span>
                 </a>
             </li>
         </ul>

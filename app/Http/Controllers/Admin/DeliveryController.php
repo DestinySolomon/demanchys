@@ -6,17 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\DeliveryMan;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class DeliveryController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        $deliveryMen = DeliveryMan::orderBy('created_at', 'desc')->get();
-        return view('admin.delivery.index', compact('deliveryMen'));
-    }
+  public function index()
+{
+    $deliveryMen = DeliveryMan::where('status', 'active')
+        ->orderBy('created_at', 'desc')
+        ->get();
+    
+    return view('admin.delivery.index', compact('deliveryMen'));
+}
 
     /**
      * Display the specified resource.
@@ -55,8 +59,79 @@ class DeliveryController extends Controller
     
 
     /**
-     * Remove the specified resource from storage.
+     * Display pending applications.
      */
+public function pending()
+{
+    $pendingApplications = DeliveryMan::where('status', 'pending')
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    return view('admin.delivery.pending', compact('pendingApplications'));
+}
+
+/**
+ * Display rejected applications.
+ */
+public function rejected()
+{
+    $orderColumn = Schema::hasColumn('delivery_men', 'rejected_at') ? 'rejected_at' : 'created_at';
+
+    $rejectedApplications = DeliveryMan::where('status', 'rejected')
+        ->orderBy($orderColumn, 'desc')
+        ->get();
+
+    return view('admin.delivery.rejected', compact('rejectedApplications'));
+}
+
+/**
+ * Approve a delivery man application.
+ */
+public function approve(string $id)
+{
+    $deliveryMan = DeliveryMan::findOrFail($id);
+    $data = ['status' => 'active'];
+
+    if (Schema::hasColumn('delivery_men', 'approved_at')) {
+        $data['approved_at'] = now();
+    }
+
+    if (Schema::hasColumn('delivery_men', 'rejected_at')) {
+        $data['rejected_at'] = null;
+    }
+
+    if (Schema::hasColumn('delivery_men', 'rejection_reason')) {
+        $data['rejection_reason'] = null;
+    }
+
+    $deliveryMan->update($data);
+
+    return redirect()->route('admin.delivery.pending')->with('success', 'Delivery man application approved successfully!');
+}
+
+/**
+ * Reject a delivery man application.
+ */
+public function reject(Request $request, string $id)
+{
+    $request->validate([ 'rejection_reason' => 'required|string|max:500' ]);
+
+    $deliveryMan = DeliveryMan::findOrFail($id);
+
+    $data = ['status' => 'rejected'];
+
+    if (Schema::hasColumn('delivery_men', 'rejected_at')) {
+        $data['rejected_at'] = now();
+    }
+
+    if (Schema::hasColumn('delivery_men', 'rejection_reason')) {
+        $data['rejection_reason'] = $request->rejection_reason;
+    }
+
+    $deliveryMan->update($data);
+
+    return redirect()->route('admin.delivery.pending')->with('success', 'Delivery man application rejected successfully!');
+}
     public function destroy(string $id)
     {
         $deliveryMan = DeliveryMan::findOrFail($id);

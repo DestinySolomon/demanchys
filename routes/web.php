@@ -139,18 +139,42 @@ Route::delete('/users/{id}', [\App\Http\Controllers\Admin\UserController::class,
 
 // DELIVERY MAN ROUTES
 Route::get('/delivery', [\App\Http\Controllers\Admin\DeliveryController::class, 'index'])->name('admin.delivery.index');
-Route::get('/delivery/{id}', [\App\Http\Controllers\Admin\DeliveryController::class, 'show'])->name('admin.delivery.show');
-Route::get('/delivery/{id}/orders', [\App\Http\Controllers\Admin\DeliveryController::class, 'orders'])->name('admin.delivery.orders');
-Route::get('/delivery/{deliveryId}/order/{orderId}', [\App\Http\Controllers\Admin\DeliveryController::class, 'orderDetails'])->name('admin.delivery.order-details');
-Route::delete('/delivery/{id}', [\App\Http\Controllers\Admin\DeliveryController::class, 'destroy'])->name('admin.delivery.destroy');
+Route::get('/delivery/{id}', [\App\Http\Controllers\Admin\DeliveryController::class, 'show'])
+    ->whereNumber('id')
+    ->name('admin.delivery.show');
+
+Route::get('/delivery/{id}/orders', [\App\Http\Controllers\Admin\DeliveryController::class, 'orders'])
+    ->whereNumber('id')
+    ->name('admin.delivery.orders');
+
+Route::get('/delivery/{deliveryId}/order/{orderId}', [\App\Http\Controllers\Admin\DeliveryController::class, 'orderDetails'])
+    ->whereNumber('deliveryId')
+    ->whereNumber('orderId')
+    ->name('admin.delivery.order-details');
+Route::delete('/delivery/{id}', [\App\Http\Controllers\Admin\DeliveryController::class, 'destroy'])->whereNumber('id')->name('admin.delivery.destroy');
+
+// Delivery Man Application Routes
+Route::get('/delivery/pending', [\App\Http\Controllers\Admin\DeliveryController::class, 'pending'])->name('admin.delivery.pending');
+Route::get('/delivery/rejected', [\App\Http\Controllers\Admin\DeliveryController::class, 'rejected'])->name('admin.delivery.rejected');
+Route::post('/delivery/{id}/approve', [\App\Http\Controllers\Admin\DeliveryController::class, 'approve'])->whereNumber('id')->name('admin.delivery.approve');
+Route::post('/delivery/{id}/reject', [\App\Http\Controllers\Admin\DeliveryController::class, 'reject'])->whereNumber('id')->name('admin.delivery.reject');
 
 // BANNER MANAGEMENT ROUTES
+// Promotional Banner Routes
 Route::get('/banners/promotional', [\App\Http\Controllers\Admin\BannerController::class, 'promotional'])->name('admin.banners.promotional');
+Route::get('/banners/promotional/create', [\App\Http\Controllers\Admin\BannerController::class, 'createPromotional'])->name('admin.banners.promotional.create');
+Route::post('/banners/promotional', [\App\Http\Controllers\Admin\BannerController::class, 'storePromotional'])->name('admin.banners.promotional.store');
+
+// Offer Deals Routes
 Route::get('/banners/offers', [\App\Http\Controllers\Admin\BannerController::class, 'offers'])->name('admin.banners.offers');
-Route::post('/banners/promotional', [\App\Http\Controllers\Admin\BannerController::class, 'storePromotional'])->name('admin.banners.store-promotional');
-Route::post('/banners/offers', [\App\Http\Controllers\Admin\BannerController::class, 'storeOffer'])->name('admin.banners.store-offer');
-Route::put('/banners/{id}/toggle', [\App\Http\Controllers\Admin\BannerController::class, 'toggleVisibility'])->name('admin.banners.toggle');
-Route::delete('/banners/{id}', [\App\Http\Controllers\Admin\BannerController::class, 'destroy'])->name('admin.banners.destroy');
+Route::get('/banners/offers/create', [\App\Http\Controllers\Admin\BannerController::class, 'createOffer'])->name('admin.banners.offers.create');
+Route::post('/banners/offers', [\App\Http\Controllers\Admin\BannerController::class, 'storeOffer'])->name('admin.banners.offers.store');
+
+// Shared Routes (edit/update/delete/toggle) for both types
+Route::get('/banners/{banner}/edit', [\App\Http\Controllers\Admin\BannerController::class, 'edit'])->name('admin.banners.edit');
+Route::put('/banners/{banner}', [\App\Http\Controllers\Admin\BannerController::class, 'update'])->name('admin.banners.update');
+Route::delete('/banners/{banner}', [\App\Http\Controllers\Admin\BannerController::class, 'destroy'])->name('admin.banners.destroy');
+Route::post('/banners/{banner}/toggle', [\App\Http\Controllers\Admin\BannerController::class, 'toggle'])->name('admin.banners.toggle');
 
 // CONTACT MESSAGES ROUTES
 Route::get('/contacts', [\App\Http\Controllers\Admin\ContactController::class, 'index'])->name('admin.contacts.index');
