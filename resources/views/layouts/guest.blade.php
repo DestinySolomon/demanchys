@@ -19,7 +19,7 @@
             <div>
                 @php $guestLogo = $settings['logo'] ?? null; @endphp
                 <img
-                    src="{{ $guestLogo ? \Illuminate\Support\Facades\Storage::url($guestLogo) : asset('assets/logo.png') }}"
+                    src="{{ $guestLogo ? (\Illuminate\Support\Facades\Storage::url($guestLogo) . '?v=' . ($settings_version ?? time())) : asset('assets/logo.png') }}"
                     alt="{{ $settings['site_name'] ?? 'De Manchys Lounge' }}"
                     class="w-20 h-20 mx-auto"
                 />

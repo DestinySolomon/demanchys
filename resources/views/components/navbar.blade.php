@@ -47,7 +47,7 @@
                     $logoUrl = \Illuminate\Support\Facades\Storage::url($settings['logo']);
                 }
             @endphp
-            <img src="{{ $logoUrl ?? asset('assets/logo.png') }}" alt="{{ $settings['site_name'] ?? 'De Manchys Lounge' }}" height="50">
+            <img src="{{ ($logoUrl ? $logoUrl . '?v=' . ($settings_version ?? time()) : asset('assets/logo.png')) }}" alt="{{ $settings['site_name'] ?? 'De Manchys Lounge' }}" height="50">
         </a>
 
         <!-- CENTER MENU (desktop only) -->

@@ -38,9 +38,14 @@ class AppServiceProvider extends ServiceProvider
                 });
             }
 
+            // Provide a settings version (timestamp) for cache busting in templates
+            $latestUpdate = Setting::max('updated_at');
+            $settingsVersion = $latestUpdate ? strtotime($latestUpdate) : time();
+
             // Make them available in all views
             View::share('settings', $allSettings);
             View::share('settingsGroups', $grouped);
+            View::share('settings_version', $settingsVersion);
         } catch (\Exception $e) {
             // If settings table doesn't exist yet or other errors occur ignore gracefully in boot
         }

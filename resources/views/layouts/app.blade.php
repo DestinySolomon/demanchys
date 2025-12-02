@@ -48,7 +48,7 @@
     <!-- CUSTOM CSS -->
     <link rel="stylesheet" href="{{ asset('assets/style.css') }}" />
     @if(!empty($settings['favicon']))
-      <link rel="icon" href="{{ \Illuminate\Support\Facades\Storage::url($settings['favicon']) }}" />
+      <link rel="icon" href="{{ \Illuminate\Support\Facades\Storage::url($settings['favicon']) }}?v={{ $settings_version ?? time() }}" />
     @endif
 </head>
 <body>

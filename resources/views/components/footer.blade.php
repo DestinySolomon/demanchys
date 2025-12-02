@@ -42,7 +42,7 @@
                 <div class="col-md-3">
                     <a class="navbar-brand" href="{{ url('/') }}">
                         @php $footerLogo = !empty($settings['logo']) ? \Illuminate\Support\Facades\Storage::url($settings['logo']) : null; @endphp
-                        <img src="{{ $footerLogo ?? asset('assets/logo.png') }}" alt="{{ $settings['site_name'] ?? 'De Manchys Lounge' }} Logo">
+                        <img src="{{ ($footerLogo ? $footerLogo . '?v=' . ($settings_version ?? time()) : asset('assets/logo.png')) }}" alt="{{ $settings['site_name'] ?? 'De Manchys Lounge' }} Logo">
                     </a>
                     <p class="small mb-4">
                         Experience luxury dining and entertainment at Uyo's premier lounge destination.
