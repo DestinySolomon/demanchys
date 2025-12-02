@@ -155,14 +155,13 @@ class BookingController extends Controller
         $year = $request->get('year', date('Y'));
         $month = $request->get('month', date('m'));
         
+        // Return a flat collection of bookings for the month. The view expects a flat
+        // collection so it can filter by day (using Carbon::parse on each booking->date).
         $bookings = Booking::whereYear('date', $year)
                           ->whereMonth('date', $month)
                           ->orderBy('date')
                           ->orderBy('time')
-                          ->get()
-                          ->groupBy(function($booking) {
-                              return $booking->date->format('Y-m-d');
-                          });
+                          ->get();
         
         return view('admin.bookings.calendar', compact('bookings', 'year', 'month'));
     }
