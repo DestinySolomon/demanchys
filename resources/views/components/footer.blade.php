@@ -41,7 +41,8 @@
                 <!-- Logo & Social -->
                 <div class="col-md-3">
                     <a class="navbar-brand" href="{{ url('/') }}">
-                        <img src="{{ asset('assets/logo.png') }}" alt="De Manchys Lounge Logo">
+                        @php $footerLogo = !empty($settings['logo']) ? \Illuminate\Support\Facades\Storage::url($settings['logo']) : null; @endphp
+                        <img src="{{ $footerLogo ?? asset('assets/logo.png') }}" alt="{{ $settings['site_name'] ?? 'De Manchys Lounge' }} Logo">
                     </a>
                     <p class="small mb-4">
                         Experience luxury dining and entertainment at Uyo's premier lounge destination.
@@ -110,8 +111,8 @@
 
             <hr class="my-4 border-secondary">
 
-            <p class="small text-center mb-0">
-                © 2025 De Manchys Lounge. All rights reserved. |
+                <p class="small text-center mb-0">
+                © {{ date('Y') }} {{ $settings['site_name'] ?? 'De Manchys Lounge' }}. All rights reserved. |
                 <a href="{{ url('/privacy-policy') }}" class="text-decoration-none text-light">Privacy Policy</a> |
                 <a href="{{ url('/terms') }}" class="text-decoration-none text-light">Terms of Service</a>
             </p>

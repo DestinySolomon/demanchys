@@ -6,7 +6,7 @@
 
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
-  <title>De Manchys Lounge</title>
+  <title>{{ $settings['site_name'] ?? 'De Manchys Lounge' }}</title>
   <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
@@ -47,6 +47,9 @@
 
     <!-- CUSTOM CSS -->
     <link rel="stylesheet" href="{{ asset('assets/style.css') }}" />
+    @if(!empty($settings['favicon']))
+      <link rel="icon" href="{{ \Illuminate\Support\Facades\Storage::url($settings['favicon']) }}" />
+    @endif
 </head>
 <body>
 

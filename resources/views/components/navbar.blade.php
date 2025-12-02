@@ -41,7 +41,13 @@
 
         <!-- LOGO LEFT -->
         <a class="navbar-brand d-flex align-items-center me-3" href="{{ url('/') }}">
-            <img src="{{ asset('assets/logo.png') }}" alt="De Manchys Lounge" height="50">
+            @php
+                $logoUrl = null;
+                if (!empty($settings['logo'])) {
+                    $logoUrl = \Illuminate\Support\Facades\Storage::url($settings['logo']);
+                }
+            @endphp
+            <img src="{{ $logoUrl ?? asset('assets/logo.png') }}" alt="{{ $settings['site_name'] ?? 'De Manchys Lounge' }}" height="50">
         </a>
 
         <!-- CENTER MENU (desktop only) -->
