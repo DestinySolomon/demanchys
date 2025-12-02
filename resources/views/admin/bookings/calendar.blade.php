@@ -171,15 +171,15 @@
                                             <small>Regular booking</small>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <span class="badge bg-warning border border-2 border-warning me-2"></span>
+                                            <span class="badge bg-warning border-2 border-warning me-2"></span>
                                             <small>Pending</small>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <span class="badge bg-success border border-2 border-success me-2"></span>
+                                            <span class="badge bg-success border-2 border-success me-2"></span>
                                             <small>Confirmed</small>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <span class="badge bg-danger border border-2 border-danger me-2"></span>
+                                            <span class="badge bg-danger border-2 border-danger me-2"></span>
                                             <small>Cancelled</small>
                                         </div>
                                         <div class="d-flex align-items-center">
