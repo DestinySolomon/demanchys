@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class SettingController extends Controller
 {
@@ -65,64 +66,111 @@ class SettingController extends Controller
     /**
      * Update logo and favicon.
      */
-    
     public function updateLogo(Request $request)
     {
-        $request->validate([
-            'logo' => 'nullable|image|mimes:jpg,jpeg,png,gif,svg|max:2048',
-            'favicon' => 'nullable|image|mimes:ico,png|max:1024',
-            'remove_logo' => 'nullable|boolean',
-            'remove_favicon' => 'nullable|boolean',
-        ]);
+        try {
+            $request->validate([
+                'logo' => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
+                'favicon' => 'nullable|image|mimes:ico,png,jpg,jpeg|max:1024',
+                'remove_logo' => 'nullable|boolean',
+                'remove_favicon' => 'nullable|boolean',
+            ]);
 
-        // Handle logo
-        if ($request->hasFile('logo')) {
-            // Delete old logo if exists
-            $oldLogo = Setting::getValue('logo');
-            if ($oldLogo && Storage::disk('public')->exists($oldLogo)) {
-                Storage::disk('public')->delete($oldLogo);
+            $responseData = [];
+
+            // Handle logo
+            if ($request->hasFile('logo')) {
+                $logo = $request->file('logo');
+                
+                // Delete old logo if exists
+                $oldLogo = Setting::getValue('logo');
+                if ($oldLogo && Storage::disk('public')->exists($oldLogo)) {
+                    Storage::disk('public')->delete($oldLogo);
+                }
+
+                // Store new logo
+                $path = $logo->store('settings', 'public');
+                
+                // Update or create logo setting with correct group and type
+                Setting::updateOrCreate(
+                    ['key' => 'logo'],
+                    [
+                        'value' => $path,
+                        'group' => 'appearance', // Changed from default 'general'
+                        'label' => 'Logo',
+                        'type' => 'file', // Changed from default 'text'
+                        'sort_order' => 1
+                    ]
+                );
+                
+                $responseData[] = 'Logo uploaded successfully';
+            } 
+            elseif ($request->has('remove_logo') && $request->boolean('remove_logo')) {
+                // Remove logo
+                $oldLogo = Setting::getValue('logo');
+                if ($oldLogo && Storage::disk('public')->exists($oldLogo)) {
+                    Storage::disk('public')->delete($oldLogo);
+                }
+                Setting::where('key', 'logo')->delete();
+                $responseData[] = 'Logo removed';
             }
 
-            // Store new logo
-            $path = $request->file('logo')->store('settings/logo', 'public');
-            Setting::setValue('logo', $path);
-        } elseif ($request->has('remove_logo') && $request->remove_logo) {
-            // Remove logo
-            $oldLogo = Setting::getValue('logo');
-            if ($oldLogo && Storage::disk('public')->exists($oldLogo)) {
-                Storage::disk('public')->delete($oldLogo);
+            // Handle favicon
+            if ($request->hasFile('favicon')) {
+                $favicon = $request->file('favicon');
+                
+                // Delete old favicon if exists
+                $oldFavicon = Setting::getValue('favicon');
+                if ($oldFavicon && Storage::disk('public')->exists($oldFavicon)) {
+                    Storage::disk('public')->delete($oldFavicon);
+                }
+
+                // Store new favicon
+                $path = $favicon->store('settings', 'public');
+                
+                // Update or create favicon setting with correct group and type
+                Setting::updateOrCreate(
+                    ['key' => 'favicon'],
+                    [
+                        'value' => $path,
+                        'group' => 'appearance', // Changed from default 'general'
+                        'label' => 'Favicon',
+                        'type' => 'file', // Changed from default 'text'
+                        'sort_order' => 2
+                    ]
+                );
+                
+                $responseData[] = 'Favicon uploaded successfully';
+            } 
+            elseif ($request->has('remove_favicon') && $request->boolean('remove_favicon')) {
+                // Remove favicon
+                $oldFavicon = Setting::getValue('favicon');
+                if ($oldFavicon && Storage::disk('public')->exists($oldFavicon)) {
+                    Storage::disk('public')->delete($oldFavicon);
+                }
+                Setting::where('key', 'favicon')->delete();
+                $responseData[] = 'Favicon removed';
             }
-            Setting::setValue('logo', null);
+
+            // Clear cache
+            Cache::forget('settings.appearance');
+            Cache::forget('settings.all');
+
+            $message = !empty($responseData) ? implode(', ', $responseData) : 'No changes made';
+
+            return response()->json([
+                'success' => true,
+                'message' => $message
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Logo update error: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
         }
-
-        // Handle favicon
-        if ($request->hasFile('favicon')) {
-            // Delete old favicon if exists
-            $oldFavicon = Setting::getValue('favicon');
-            if ($oldFavicon && Storage::disk('public')->exists($oldFavicon)) {
-                Storage::disk('public')->delete($oldFavicon);
-            }
-
-            // Store new favicon
-            $path = $request->file('favicon')->store('settings/favicon', 'public');
-            Setting::setValue('favicon', $path);
-        } elseif ($request->has('remove_favicon') && $request->remove_favicon) {
-            // Remove favicon
-            $oldFavicon = Setting::getValue('favicon');
-            if ($oldFavicon && Storage::disk('public')->exists($oldFavicon)) {
-                Storage::disk('public')->delete($oldFavicon);
-            }
-            Setting::setValue('favicon', null);
-        }
-
-        // Clear cache
-        Cache::forget('settings.appearance');
-        Cache::forget('settings.all');
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Logo and favicon updated successfully!'
-        ]);
     }
 
     /**
@@ -139,7 +187,7 @@ class SettingController extends Controller
         $validated['recaptcha_enabled'] = $request->has('recaptcha_enabled') ? 1 : 0;
 
         foreach ($validated as $key => $value) {
-            Setting::setValue($key, $value);
+            Setting::setValue($key, $value, 'security');
         }
 
         Cache::forget('settings.security');
@@ -167,7 +215,7 @@ class SettingController extends Controller
         $validated['whatsapp_enabled'] = $request->has('whatsapp_enabled') ? 1 : 0;
 
         foreach ($validated as $key => $value) {
-            Setting::setValue($key, $value);
+            Setting::setValue($key, $value, 'integration');
         }
 
         Cache::forget('settings.integration');
