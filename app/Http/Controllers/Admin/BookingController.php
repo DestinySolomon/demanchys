@@ -7,6 +7,7 @@ use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
@@ -91,7 +92,7 @@ class BookingController extends Controller
         $booking->update([
             'status' => $newStatus,
             'admin_notes' => $request->admin_notes ?: $booking->admin_notes,
-            'updated_by' => auth()->id()
+            'updated_by' => Auth::id()
         ]);
         
         // Send email notification if status changed to confirmed
@@ -139,7 +140,7 @@ class BookingController extends Controller
         
         $booking->update([
             'admin_notes' => $request->admin_notes,
-            'updated_by' => auth()->id()
+            'updated_by' => Auth::id()
         ]);
         
         return redirect()->route('admin.bookings.show', $booking)
@@ -202,7 +203,7 @@ class BookingController extends Controller
         
         Booking::whereIn('id', $request->ids)->update([
             'status' => $request->status,
-            'updated_by' => auth()->id()
+            'updated_by' => Auth::id()
         ]);
         
         return redirect()->route('admin.bookings.index')
