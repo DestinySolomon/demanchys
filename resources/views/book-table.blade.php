@@ -34,6 +34,13 @@
                         <input type="text" name="phone" class="form-control" required>
                         @error('phone') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
+                    
+                   <div class="mb-3">
+                    <label class="form-label fw-semibold text-dark">Email Address</label>
+                     <input type="email" name="email" class="form-control">
+                    <small class="text-muted">Optional - for confirmation email</small>
+                     @error('email') <small class="text-danger">{{ $message }}</small> @enderror
+                   </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold text-dark">Number of Guests</label>

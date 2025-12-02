@@ -176,18 +176,56 @@ Route::put('/banners/{banner}', [\App\Http\Controllers\Admin\BannerController::c
 Route::delete('/banners/{banner}', [\App\Http\Controllers\Admin\BannerController::class, 'destroy'])->name('admin.banners.destroy');
 Route::post('/banners/{banner}/toggle', [\App\Http\Controllers\Admin\BannerController::class, 'toggle'])->name('admin.banners.toggle');
 
+
 // CONTACT MESSAGES ROUTES
 Route::get('/contacts', [\App\Http\Controllers\Admin\ContactController::class, 'index'])->name('admin.contacts.index');
-Route::get('/contacts/{id}', [\App\Http\Controllers\Admin\ContactController::class, 'show'])->name('admin.contacts.show');
-Route::delete('/contacts/{id}', [\App\Http\Controllers\Admin\ContactController::class, 'destroy'])->name('admin.contacts.destroy');
+Route::get('/contacts/{contact}', [\App\Http\Controllers\Admin\ContactController::class, 'show'])->name('admin.contacts.show');
+Route::delete('/contacts/{contact}', [\App\Http\Controllers\Admin\ContactController::class, 'destroy'])->name('admin.contacts.destroy');
+Route::post('/contacts/{contact}/mark-as-read', [\App\Http\Controllers\Admin\ContactController::class, 'markAsRead'])->name('admin.contacts.mark-as-read');
+Route::post('/contacts/{contact}/mark-as-replied', [\App\Http\Controllers\Admin\ContactController::class, 'markAsReplied'])->name('admin.contacts.mark-as-replied');
+Route::post('/contacts/{contact}/send-reply', [\App\Http\Controllers\Admin\ContactController::class, 'sendReply'])->name('admin.contacts.send-reply');
+
+
 
 // TESTIMONIALS ROUTES
 Route::get('/testimonials', [\App\Http\Controllers\Admin\TestimonialController::class, 'index'])->name('admin.testimonials.index');
 Route::get('/testimonials/create', [\App\Http\Controllers\Admin\TestimonialController::class, 'create'])->name('admin.testimonials.create');
 Route::post('/testimonials', [\App\Http\Controllers\Admin\TestimonialController::class, 'store'])->name('admin.testimonials.store');
-Route::get('/testimonials/{id}/edit', [\App\Http\Controllers\Admin\TestimonialController::class, 'edit'])->name('admin.testimonials.edit');
-Route::put('/testimonials/{id}', [\App\Http\Controllers\Admin\TestimonialController::class, 'update'])->name('admin.testimonials.update');
-Route::delete('/testimonials/{id}', [\App\Http\Controllers\Admin\TestimonialController::class, 'destroy'])->name('admin.testimonials.destroy');
+Route::get('/testimonials/{testimonial}/edit', [\App\Http\Controllers\Admin\TestimonialController::class, 'edit'])->name('admin.testimonials.edit');
+Route::put('/testimonials/{testimonial}', [\App\Http\Controllers\Admin\TestimonialController::class, 'update'])->name('admin.testimonials.update');
+Route::delete('/testimonials/{testimonial}', [\App\Http\Controllers\Admin\TestimonialController::class, 'destroy'])->name('admin.testimonials.destroy');
+
+// Additional routes
+Route::post('/testimonials/{testimonial}/toggle-featured', [\App\Http\Controllers\Admin\TestimonialController::class, 'toggleFeatured'])->name('admin.testimonials.toggle-featured');
+Route::post('/testimonials/{testimonial}/toggle-approved', [\App\Http\Controllers\Admin\TestimonialController::class, 'toggleApproved'])->name('admin.testimonials.toggle-approved');
+Route::post('/testimonials/bulk-approve', [\App\Http\Controllers\Admin\TestimonialController::class, 'bulkApprove'])->name('admin.testimonials.bulk-approve');
+Route::post('/testimonials/update-order', [\App\Http\Controllers\Admin\TestimonialController::class, 'updateOrder'])->name('admin.testimonials.update-order');
+
+
+
+// BOOKINGS MANAGEMENT ROUTES
+Route::get('/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index'])->name('admin.bookings.index');
+Route::get('/bookings/today', [\App\Http\Controllers\Admin\BookingController::class, 'today'])->name('admin.bookings.today');
+Route::get('/bookings/calendar', [\App\Http\Controllers\Admin\BookingController::class, 'calendar'])->name('admin.bookings.calendar');
+Route::get('/bookings/{booking}', [\App\Http\Controllers\Admin\BookingController::class, 'show'])->name('admin.bookings.show');
+Route::post('/bookings/{booking}/update-status', [\App\Http\Controllers\Admin\BookingController::class, 'updateStatus'])->name('admin.bookings.update-status');
+Route::post('/bookings/{booking}/update-notes', [\App\Http\Controllers\Admin\BookingController::class, 'updateNotes'])->name('admin.bookings.update-notes');
+Route::delete('/bookings/{booking}', [\App\Http\Controllers\Admin\BookingController::class, 'destroy'])->name('admin.bookings.destroy');
+Route::post('/bookings/bulk-update', [\App\Http\Controllers\Admin\BookingController::class, 'bulkUpdate'])->name('admin.bookings.bulk-update');
+
+
+
+// SETTINGS ROUTES
+Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('admin.settings.index');
+Route::post('/settings/general', [\App\Http\Controllers\Admin\SettingController::class, 'updateGeneral'])->name('admin.settings.update-general');
+Route::post('/settings/logo', [\App\Http\Controllers\Admin\SettingController::class, 'updateLogo'])->name('admin.settings.update-logo');
+Route::post('/settings/recaptcha', [\App\Http\Controllers\Admin\SettingController::class, 'updateRecaptcha'])->name('admin.settings.update-recaptcha');
+Route::post('/settings/whatsapp', [\App\Http\Controllers\Admin\SettingController::class, 'updateWhatsapp'])->name('admin.settings.update-whatsapp');
+Route::post('/settings/analytics', [\App\Http\Controllers\Admin\SettingController::class, 'updateAnalytics'])->name('admin.settings.update-analytics');
+Route::post('/settings/database', [\App\Http\Controllers\Admin\SettingController::class, 'clearDatabase'])->name('admin.settings.clear-database');
+Route::post('/settings/dark-mode', [\App\Http\Controllers\Admin\SettingController::class, 'updateDarkMode'])->name('admin.settings.update-dark-mode');
+
+
 
 // PAYMENT METHODS ROUTES
 Route::get('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index'])->name('admin.payments.index');
@@ -196,17 +234,9 @@ Route::post('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 
 Route::get('/payments/{id}/edit', [\App\Http\Controllers\Admin\PaymentController::class, 'edit'])->name('admin.payments.edit');
 Route::put('/payments/{id}', [\App\Http\Controllers\Admin\PaymentController::class, 'update'])->name('admin.payments.update');
 Route::delete('/payments/{id}', [\App\Http\Controllers\Admin\PaymentController::class, 'destroy'])->name('admin.payments.destroy');
-
-// SETTINGS ROUTES
-Route::get('/settings/general', [\App\Http\Controllers\Admin\SettingController::class, 'general'])->name('admin.settings.general');
-Route::get('/settings/logo', [\App\Http\Controllers\Admin\SettingController::class, 'logo'])->name('admin.settings.logo');
-Route::get('/settings/recaptcha', [\App\Http\Controllers\Admin\SettingController::class, 'recaptcha'])->name('admin.settings.recaptcha');
-Route::get('/settings/whatsapp', [\App\Http\Controllers\Admin\SettingController::class, 'whatsapp'])->name('admin.settings.whatsapp');
-Route::get('/settings/analytics', [\App\Http\Controllers\Admin\SettingController::class, 'analytics'])->name('admin.settings.analytics');
-Route::get('/settings/database', [\App\Http\Controllers\Admin\SettingController::class, 'database'])->name('admin.settings.database');
-Route::post('/settings/general', [\App\Http\Controllers\Admin\SettingController::class, 'updateGeneral'])->name('admin.settings.update-general');
-Route::post('/settings/logo', [\App\Http\Controllers\Admin\SettingController::class, 'updateLogo'])->name('admin.settings.update-logo');
-
+Route::get('/payments/{id}', [\App\Http\Controllers\Admin\PaymentController::class, 'show'])->name('admin.payments.show');
+Route::post('/payments/toggle-status', [\App\Http\Controllers\Admin\PaymentController::class, 'toggleStatus'])->name('admin.payments.toggle-status');
+Route::post('/payments/set-default', [\App\Http\Controllers\Admin\PaymentController::class, 'setDefault'])->name('admin.payments.set-default');
 });
 });
 

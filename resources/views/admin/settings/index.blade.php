@@ -56,77 +56,103 @@
                         <!-- Settings Content -->
                         <div class="col-md-9">
                             <div class="tab-content">
-                                <!-- General Settings -->
-                                <div class="tab-pane fade show active" id="general-tab">
-                                    <div class="card">
-                                        <div class="card-header bg-light">
-                                            <h5 class="mb-0">
-                                                <i class="bi bi-sliders me-2"></i>
-                                                General Settings
-                                            </h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <form id="generalForm">
-                                                @csrf
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label for="site_name" class="form-label">Site Name *</label>
-                                                        <input type="text" class="form-control" id="site_name" name="site_name" 
-                                                               value="{{ $settings['general']['site_name']->value ?? 'De Manchys Lounge' }}" required>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label for="site_email" class="form-label">Site Email *</label>
-                                                        <input type="email" class="form-control" id="site_email" name="site_email" 
-                                                               value="{{ $settings['general']['site_email']->value ?? '' }}" required>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label for="site_phone" class="form-label">Site Phone</label>
-                                                        <input type="text" class="form-control" id="site_phone" name="site_phone" 
-                                                               value="{{ $settings['general']['site_phone']->value ?? '' }}">
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label for="site_address" class="form-label">Site Address</label>
-                                                        <input type="text" class="form-control" id="site_address" name="site_address" 
-                                                               value="{{ $settings['general']['site_address']->value ?? '' }}">
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label for="currency" class="form-label">Currency</label>
-                                                        <select class="form-control" id="currency" name="currency">
-                                                            <option value="USD" {{ ($settings['general']['currency']->value ?? 'USD') == 'USD' ? 'selected' : '' }}>USD ($)</option>
-                                                            <option value="EUR" {{ ($settings['general']['currency']->value ?? 'USD') == 'EUR' ? 'selected' : '' }}>EUR (€)</option>
-                                                            <option value="GBP" {{ ($settings['general']['currency']->value ?? 'USD') == 'GBP' ? 'selected' : '' }}>GBP (£)</option>
-                                                            <option value="NGN" {{ ($settings['general']['currency']->value ?? 'USD') == 'NGN' ? 'selected' : '' }}>NGN (₦)</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label for="timezone" class="form-label">Timezone</label>
-                                                        <select class="form-control" id="timezone" name="timezone">
-                                                            @foreach(timezone_identifiers_list() as $tz)
-                                                                <option value="{{ $tz }}" {{ ($settings['general']['timezone']->value ?? 'UTC') == $tz ? 'selected' : '' }}>
-                                                                    {{ $tz }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-12 mb-3">
-                                                        <label for="site_description" class="form-label">Site Description</label>
-                                                        <textarea class="form-control" id="site_description" name="site_description" rows="3">{{ $settings['general']['site_description']->value ?? '' }}</textarea>
-                                                    </div>
-                                                    <div class="col-md-12 mb-3">
-                                                        <label for="site_keywords" class="form-label">Site Keywords (comma separated)</label>
-                                                        <input type="text" class="form-control" id="site_keywords" name="site_keywords" 
-                                                               value="{{ $settings['general']['site_keywords']->value ?? '' }}">
-                                                    </div>
-                                                </div>
-                                                <div class="d-flex justify-content-end">
-                                                    <button type="button" class="btn btn-primary" onclick="saveSettings('general')">
-                                                        <i class="bi bi-save me-1"></i> Save General Settings
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
+                               <!-- General Settings -->
+<div class="tab-pane fade show active" id="general-tab">
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-sliders me-2"></i>
+                General Settings
+            </h5>
+        </div>
+        <div class="card-body">
+            <form id="generalForm">
+                @csrf
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="site_name" class="form-label">Site Name *</label>
+                        <input type="text" class="form-control" id="site_name" name="site_name" 
+                               value="{{ $settings['general']['site_name']->value ?? 'De Manchys Lounge' }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="site_email" class="form-label">Site Email *</label>
+                        <input type="email" class="form-control" id="site_email" name="site_email" 
+                               value="{{ $settings['general']['site_email']->value ?? '' }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="site_phone" class="form-label">Site Phone</label>
+                        <input type="text" class="form-control" id="site_phone" name="site_phone" 
+                               value="{{ $settings['general']['site_phone']->value ?? '' }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="site_address" class="form-label">Site Address</label>
+                        <input type="text" class="form-control" id="site_address" name="site_address" 
+                               value="{{ $settings['general']['site_address']->value ?? '' }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="currency" class="form-label">Currency</label>
+                        <select class="form-control" id="currency" name="currency">
+                            <option value="USD" {{ ($settings['general']['currency']->value ?? 'USD') == 'USD' ? 'selected' : '' }}>USD ($)</option>
+                            <option value="EUR" {{ ($settings['general']['currency']->value ?? 'USD') == 'EUR' ? 'selected' : '' }}>EUR (€)</option>
+                            <option value="GBP" {{ ($settings['general']['currency']->value ?? 'USD') == 'GBP' ? 'selected' : '' }}>GBP (£)</option>
+                            <option value="NGN" {{ ($settings['general']['currency']->value ?? 'USD') == 'NGN' ? 'selected' : '' }}>NGN (₦)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="timezone" class="form-label">Timezone</label>
+                        <select class="form-control" id="timezone" name="timezone">
+                            @foreach(timezone_identifiers_list() as $tz)
+                                <option value="{{ $tz }}" {{ ($settings['general']['timezone']->value ?? 'UTC') == $tz ? 'selected' : '' }}>
+                                    {{ $tz }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label for="site_description" class="form-label">Site Description</label>
+                        <textarea class="form-control" id="site_description" name="site_description" rows="3">{{ $settings['general']['site_description']->value ?? '' }}</textarea>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label for="site_keywords" class="form-label">Site Keywords (comma separated)</label>
+                        <input type="text" class="form-control" id="site_keywords" name="site_keywords" 
+                               value="{{ $settings['general']['site_keywords']->value ?? '' }}">
+                    </div>
+                    
+                    <!-- ADDED: Site Status Field -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Site Status *</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="site_status" id="site_status_active" 
+                                   value="active" {{ ($settings['general']['site_status']->value ?? 'active') == 'active' ? 'checked' : '' }} required>
+                            <label class="form-check-label" for="site_status_active">
+                                Active
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="site_status" id="site_status_maintenance" 
+                                   value="maintenance" {{ ($settings['general']['site_status']->value ?? 'active') == 'maintenance' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="site_status_maintenance">
+                                Maintenance Mode
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- ADDED: Maintenance Message Field -->
+                    <div class="col-md-6 mb-3">
+                        <label for="maintenance_message" class="form-label">Maintenance Message</label>
+                        <textarea class="form-control" id="maintenance_message" name="maintenance_message" 
+                                  rows="3" placeholder="Site is under maintenance. Please check back later.">{{ $settings['general']['maintenance_message']->value ?? '' }}</textarea>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="button" class="btn btn-primary" onclick="saveSettings('general')">
+                        <i class="bi bi-save me-1"></i> Save General Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
                                 <!-- Logo & Favicon -->
                                 <div class="tab-pane fade" id="logo-tab">
@@ -549,6 +575,46 @@
 
 @push('scripts')
 <script>
+    // Helper: Get form data including unchecked checkboxes
+    function getFormDataWithCheckboxes(formId) {
+        const form = document.getElementById(formId);
+        const formData = new FormData();
+        
+        // Add all form elements
+        const elements = form.elements;
+        for (let i = 0; i < elements.length; i++) {
+            const element = elements[i];
+            const name = element.name;
+            
+            if (!name) continue;
+            
+            if (element.type === 'checkbox') {
+                // For checkboxes: send 1 if checked, 0 if unchecked
+                formData.append(name, element.checked ? '1' : '0');
+            } else if (element.type === 'radio') {
+                // For radio buttons: only add if checked
+                if (element.checked) {
+                    formData.append(name, element.value);
+                }
+            } else if (element.type === 'select-multiple') {
+                // For multi-selects
+                for (let j = 0; j < element.options.length; j++) {
+                    if (element.options[j].selected) {
+                        formData.append(name, element.options[j].value);
+                    }
+                }
+            } else {
+                // For all other inputs
+                formData.append(name, element.value);
+            }
+        }
+        
+        // Add CSRF token
+        formData.append('_token', '{{ csrf_token() }}');
+        
+        return formData;
+    }
+
     // Save all settings button
     document.getElementById('saveAllSettings').addEventListener('click', function() {
         const activeTab = document.querySelector('#settingsTabs .active');
@@ -580,7 +646,7 @@
 
     // Save settings function
     function saveSettings(type) {
-        let formId, url, formData;
+        let formId, url;
         
         switch(type) {
             case 'general':
@@ -608,38 +674,36 @@
                 return;
         }
         
-        formData = new FormData(document.getElementById(formId));
+        const formData = getFormDataWithCheckboxes(formId);
         
-        // Convert form data to JSON for non-file submissions
-        const data = {};
-        formData.forEach((value, key) => {
-            if (key !== '_token') {
-                data[key] = value;
-            }
-        });
+        // Show loading state
+        const saveBtn = document.getElementById(formId).querySelector('button[type="button"]');
+        const originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Saving...';
+        saveBtn.disabled = true;
         
-        // Add CSRF token
-        data['_token'] = '{{ csrf_token() }}';
-        
-        // Send AJAX request
         fetch(url, {
             method: 'POST',
-            credentials: 'same-origin',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             },
-            body: JSON.stringify(data)
+            body: formData
         })
         .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => { throw new Error(response.status + ' ' + response.statusText + ': ' + (text || '')); });
+            if (response.redirected) {
+                window.location.href = response.url;
+                throw new Error('Redirected to login');
             }
-            const ct = response.headers.get('content-type') || '';
-            if (ct.includes('application/json')) return response.json();
-            return response.text().then(text => {
-                try { return JSON.parse(text); } catch (e) { return { success: false, message: text || response.statusText }; }
-            });
+            
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
+                });
+            }
+            
+            return response.json();
         })
         .then(result => {
             if (result.success) {
@@ -649,8 +713,23 @@
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            showToast('error', error.message || 'Network error. Please try again.');
+            console.error('Save error:', error);
+            
+            if (error.message.includes('Redirected') || error.message.includes('419') || error.message.includes('401')) {
+                showToast('error', 'Session expired. Please refresh the page and try again.');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                showToast('error', error.message || 'Network error. Please try again.');
+            }
+        })
+        .finally(() => {
+            // Restore button state
+            if (saveBtn) {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
         });
     }
 
@@ -659,39 +738,61 @@
         const form = document.getElementById('logoForm');
         const formData = new FormData(form);
         
+        // Show loading state
+        const saveBtn = document.querySelector('#logo-tab button[onclick="saveLogo()"]');
+        const originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Uploading...';
+        saveBtn.disabled = true;
+        
         fetch('{{ route("admin.settings.update-logo") }}', {
             method: 'POST',
-            credentials: 'same-origin',
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: formData
         })
         .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => { throw new Error(response.status + ' ' + response.statusText + ': ' + (text || '')); });
+            if (response.redirected) {
+                window.location.href = response.url;
+                throw new Error('Redirected to login');
             }
-            const ct = response.headers.get('content-type') || '';
-            if (ct.includes('application/json')) return response.json();
-            return response.text().then(text => {
-                try { return JSON.parse(text); } catch (e) { return { success: false, message: text || response.statusText }; }
-            });
+            
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
+                });
+            }
+            
+            return response.json();
         })
         .then(result => {
             if (result.success) {
                 showToast('success', result.message);
                 // Reload after 2 seconds to show new images
                 setTimeout(() => {
-                    // Force reload (bypass cache)
-                    window.location.reload(true);
+                    window.location.reload();
                 }, 1200);
             } else {
                 showToast('error', result.message || 'Error saving logo/favicon');
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            showToast('error', error.message || 'Network error. Please try again.');
+            console.error('Logo save error:', error);
+            if (error.message.includes('Redirected') || error.message.includes('419') || error.message.includes('401')) {
+                showToast('error', 'Session expired. Please refresh the page.');
+                setTimeout(() => window.location.reload(), 2000);
+            } else {
+                showToast('error', error.message || 'Network error. Please try again.');
+            }
+        })
+        .finally(() => {
+            // Restore button state
+            if (saveBtn) {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
         });
     }
 
@@ -703,34 +804,29 @@
         
         const form = document.getElementById('databaseForm');
         const formData = new FormData(form);
-        const data = {};
-        
-        formData.forEach((value, key) => {
-            if (key !== '_token') {
-                data[key] = value ? 1 : 0;
-            }
-        });
-        
-        data['_token'] = '{{ csrf_token() }}';
         
         fetch('{{ route("admin.settings.clear-database") }}', {
             method: 'POST',
-            credentials: 'same-origin',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             },
-            body: JSON.stringify(data)
+            body: formData
         })
         .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => { throw new Error(response.status + ' ' + response.statusText + ': ' + (text || '')); });
+            if (response.redirected) {
+                window.location.href = response.url;
+                throw new Error('Redirected to login');
             }
-            const ct = response.headers.get('content-type') || '';
-            if (ct.includes('application/json')) return response.json();
-            return response.text().then(text => {
-                try { return JSON.parse(text); } catch (e) { return { success: false, message: text || response.statusText }; }
-            });
+            
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
+                });
+            }
+            
+            return response.json();
         })
         .then(result => {
             if (result.success) {
@@ -740,8 +836,13 @@
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            showToast('error', error.message || 'Network error. Please try again.');
+            console.error('Clear database error:', error);
+            if (error.message.includes('Redirected') || error.message.includes('419') || error.message.includes('401')) {
+                showToast('error', 'Session expired. Please refresh the page.');
+                setTimeout(() => window.location.reload(), 2000);
+            } else {
+                showToast('error', error.message || 'Network error. Please try again.');
+            }
         });
     }
 

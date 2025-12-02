@@ -86,5 +86,51 @@
   </div>
 </div>
 <!-- In your layout file, before closing </body> -->
+
+
+
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Custom JS -->
+  <script src="{{ asset('assets/script.js') }}"></script>
+  
+  <!-- WhatsApp Widget -->
+  @include('components.whatsapp-widget')
+  
+  @stack('scripts')
+   <!-- put this at end of layout (before closing body) -->
+<div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3 rounded-4">
+      <div class="modal-header border-0">
+        <h5 class="modal-title">Welcome to De Manchys Lounge</h5>
+        <button class=" btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p class="text-white-50">Login or create an account to enjoy a personalized experience.</p>
+        <a href="{{ url('/login') }}" class="btn btn-warning w-100 mb-2">Login</a>
+        <a href="{{ url('/register') }}" class="btn btn-outline-warning w-100">Create Account</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+@php
+use App\Models\Setting;
+@endphp
+
+@if(Setting::getValue('google_analytics_enabled') && Setting::getValue('google_analytics_id'))
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ Setting::getValue('google_analytics_id') }}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '{{ Setting::getValue('google_analytics_id') }}');
+    </script>
+@endif
 </body>
 </html>

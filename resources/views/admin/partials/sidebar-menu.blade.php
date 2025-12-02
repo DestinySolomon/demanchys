@@ -152,23 +152,64 @@
     </div>
 </li>
 
-    <!-- Manage Banner -->
+    <!-- Booking Management -->
 <li class="mb-1">
-    <a class="sidebar-menu-item {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}" data-bs-toggle="collapse" href="#bannersCollapse" data-title="Manage Banner">
+    <a class="sidebar-menu-item {{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}" data-bs-toggle="collapse" href="#bookingsCollapse" data-title="Booking Management">
+        <i class="bi bi-calendar-check me-3"></i>
+        <span>Booking Management</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+    </a>
+    <div class="collapse {{ request()->routeIs('admin.bookings.*') ? 'show' : '' }}" id="bookingsCollapse">
+        <ul class="list-unstyled ms-4 mt-2">
+            <li class="mb-2">
+                <a href="{{ route('admin.bookings.index') }}" class="sidebar-submenu-item {{ request()->routeIs('admin.bookings.index') ? 'active' : '' }}">
+                    <i class="bi bi-list-ul me-2"></i>
+                    <span>All Bookings</span>
+                </a>
+            </li>
+            <li class="mb-2">
+                <a href="{{ route('admin.bookings.today') }}" class="sidebar-submenu-item {{ request()->routeIs('admin.bookings.today') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-day me-2"></i>
+                    <span>Today's Bookings</span>
+                </a>
+            </li>
+            <li class="mb-2">
+                <a href="{{ route('admin.bookings.calendar') }}" class="sidebar-submenu-item {{ request()->routeIs('admin.bookings.calendar') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-week me-2"></i>
+                    <span>Booking Calendar</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</li>
+
+    <!-- Manage Banner -->
+<!-- Manage Banner -->
+<li class="mb-1">
+    <a class="sidebar-menu-item {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}" 
+       data-bs-toggle="collapse" 
+       href="#bannersCollapse" 
+       data-title="Manage Banner"
+       aria-expanded="{{ request()->routeIs('admin.banners.*') ? 'true' : 'false' }}"
+       aria-controls="bannersCollapse">
         <i class="bi bi-image me-3"></i>
         <span>Manage Banner</span>
         <i class="bi bi-chevron-down ms-auto"></i>
     </a>
-    <div class="collapse {{ request()->routeIs('admin.banners.*') ? 'show' : '' }}" id="bannersCollapse">
+    <div class="collapse {{ request()->routeIs('admin.banners.*') ? 'show' : '' }}" 
+         id="bannersCollapse"
+         @if(request()->routeIs('admin.banners.*')) style="display: block;" @endif>
         <ul class="list-unstyled ms-4 mt-2">
             <li class="mb-2">
-                <a href="{{ route('admin.banners.promotional') }}" class="sidebar-submenu-item {{ request()->routeIs('admin.banners.promotional') ? 'active' : '' }}">
+                <a href="{{ route('admin.banners.promotional') }}" 
+                   class="sidebar-submenu-item {{ request()->routeIs('admin.banners.promotional') ? 'active' : '' }}">
                     <i class="bi bi-megaphone me-2"></i>
                     <span>Promotional Banner</span>
                 </a>
             </li>
             <li class="mb-2">
-                <a href="{{ route('admin.banners.offers') }}" class="sidebar-submenu-item {{ request()->routeIs('admin.banners.offers') ? 'active' : '' }}">
+                <a href="{{ route('admin.banners.offers') }}" 
+                   class="sidebar-submenu-item {{ request()->routeIs('admin.banners.offers') ? 'active' : '' }}">
                     <i class="bi bi-tag me-2"></i>
                     <span>Offer Deals</span>
                 </a>
@@ -237,53 +278,14 @@
     </a>
 </li>
 
-    <!-- Settings -->
+   <!-- Settings -->
 <li class="mb-1">
-    <a class="sidebar-menu-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" data-bs-toggle="collapse" href="#settingsCollapse" data-title="Settings">
+    <a href="{{ route('admin.settings.index') }}" 
+       class="sidebar-menu-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" 
+       data-title="Settings">
         <i class="bi bi-gear me-3"></i>
         <span>Settings</span>
-        <i class="bi bi-chevron-down ms-auto"></i>
     </a>
-    <div class="collapse {{ request()->routeIs('admin.settings.*') ? 'show' : '' }}" id="settingsCollapse">
-        <ul class="list-unstyled ms-4 mt-2">
-            <li class="mb-2">
-                <a href="{{ route('admin.settings.general') }}" class="sidebar-submenu-item {{ request()->routeIs('admin.settings.general') ? 'active' : '' }}">
-                    <i class="bi bi-sliders me-2"></i>
-                    <span>General Setting</span>
-                </a>
-            </li>
-            <li class="mb-2">
-                <a href="{{ route('admin.settings.logo') }}" class="sidebar-submenu-item {{ request()->routeIs('admin.settings.logo') ? 'active' : '' }}">
-                    <i class="bi bi-image me-2"></i>
-                    <span>Logo and Favicon</span>
-                </a>
-            </li>
-            <li class="mb-2">
-                <a href="{{ route('admin.settings.recaptcha') }}" class="sidebar-submenu-item {{ request()->routeIs('admin.settings.recaptcha') ? 'active' : '' }}">
-                    <i class="bi bi-shield-check me-2"></i>
-                    <span>Google reCaptcha</span>
-                </a>
-            </li>
-            <li class="mb-2">
-                <a href="{{ route('admin.settings.whatsapp') }}" class="sidebar-submenu-item {{ request()->routeIs('admin.settings.whatsapp') ? 'active' : '' }}">
-                    <i class="bi bi-whatsapp me-2"></i>
-                    <span>WhatsApp Chat</span>
-                </a>
-            </li>
-            <li class="mb-2">
-                <a href="{{ route('admin.settings.analytics') }}" class="sidebar-submenu-item {{ request()->routeIs('admin.settings.analytics') ? 'active' : '' }}">
-                    <i class="bi bi-graph-up me-2"></i>
-                    <span>Google Analytic</span>
-                </a>
-            </li>
-            <li class="mb-2">
-                <a href="{{ route('admin.settings.database') }}" class="sidebar-submenu-item {{ request()->routeIs('admin.settings.database') ? 'active' : '' }}">
-                    <i class="bi bi-database me-2"></i>
-                    <span>Database Clear</span>
-                </a>
-            </li>
-        </ul>
-    </div>
 </li>
 
     <!-- Logout -->
