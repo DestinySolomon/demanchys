@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\User;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -31,6 +33,23 @@ class ContactController extends Controller
             'message' => $validated['message'],
             'status' => 'unread'
         ]);
+
+        // Notify all admin users of the new contact message
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            Notification::createNotification(
+                'contact',
+                'New Contact Message',
+                "{$contact->name} sent a message: {$contact->subject}",
+                $admin,
+                [
+                    'contact_id' => $contact->id,
+                    'contact_name' => $contact->name,
+                    'contact_email' => $contact->email,
+                    'contact_subject' => $contact->subject,
+                ]
+            );
+        }
 
         // Send email notification (optional - keep your existing email code)
         try {
