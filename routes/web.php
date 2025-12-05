@@ -237,6 +237,23 @@ Route::delete('/payments/{id}', [\App\Http\Controllers\Admin\PaymentController::
 Route::get('/payments/{id}', [\App\Http\Controllers\Admin\PaymentController::class, 'show'])->name('admin.payments.show');
 Route::post('/payments/toggle-status', [\App\Http\Controllers\Admin\PaymentController::class, 'toggleStatus'])->name('admin.payments.toggle-status');
 Route::post('/payments/set-default', [\App\Http\Controllers\Admin\PaymentController::class, 'setDefault'])->name('admin.payments.set-default');
+
+
+
+
+// NOTIFICATION ROUTES
+Route::prefix('notifications')->name('admin.notifications.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('index');
+    Route::get('/list', [\App\Http\Controllers\Admin\NotificationController::class, 'list'])->name('list');
+    Route::get('/unread-count', [\App\Http\Controllers\Admin\NotificationController::class, 'unreadCount'])->name('unread-count');
+    Route::post('/{id}/read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('mark-as-read');
+    Route::post('/mark-all-read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+    Route::delete('/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'destroy'])->name('destroy');
+    Route::delete('/', [\App\Http\Controllers\Admin\NotificationController::class, 'clearAll'])->name('clear-all');
+});
+
+
+
 });
 });
 
