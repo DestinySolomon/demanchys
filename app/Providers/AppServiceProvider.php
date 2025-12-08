@@ -5,7 +5,10 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Setting;
+use Illuminate\Notifications\DatabaseNotification;
+use App\Models\Wishlist;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -14,7 +17,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Bind our custom Notification model
+        $this->app->bind(DatabaseNotification::class, \App\Models\Notification::class);
     }
 
     /**
@@ -49,5 +53,19 @@ class AppServiceProvider extends ServiceProvider
         } catch (\Exception $e) {
             // If settings table doesn't exist yet or other errors occur ignore gracefully in boot
         }
+
+        // Use view composer for wishlistCount to ensure it's calculated after auth is ready
+        View::composer(['components.navbar', 'layouts.app', 'layouts.user-dashboard-clean'], function ($view) {
+            try {
+                $wishlistCount = 0;
+                if (Auth::check()) {
+                    $wishlistCount = Wishlist::where('user_id', Auth::id())->count();
+                }
+                $view->with('wishlistCount', $wishlistCount);
+            } catch (\Exception $e) {
+                // If wishlist table doesn't exist or query fails, use 0
+                $view->with('wishlistCount', 0);
+            }
+        });
     }
 }

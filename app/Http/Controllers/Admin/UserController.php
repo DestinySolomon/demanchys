@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -14,7 +15,8 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::where('role', '!=', 'admin')
+        // Get all users except super_admin (so super_admin can manage everyone)
+        $users = User::whereNotIn('role', ['super_admin'])
                     ->orderBy('created_at', 'desc')
                     ->get();
         
@@ -37,10 +39,60 @@ class UserController extends Controller
     }
 
     /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        $user = User::findOrFail($id);
+        
+        // Only super_admin can edit roles
+        if (!Auth::check() || Auth::user()->role !== 'super_admin') {
+            abort(403, 'Only super admin can edit user roles.');
+        }
+        
+        return view('admin.users.edit', compact('user'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        // Only super_admin can update users
+        if (!Auth::check() || Auth::user()->role !== 'super_admin') {
+            abort(403, 'Only super admin can update users.');
+        }
+        
+        $user = User::findOrFail($id);
+        
+        // Validate
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'role' => 'required|in:user,admin,super_admin',
+        ]);
+        
+        // Update user
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'role' => $request->role,
+        ]);
+        
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User updated successfully.');
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
+        // Only super_admin can delete users
+        if (!Auth::check() || Auth::user()->role !== 'super_admin') {
+            abort(403, 'Only super admin can delete users.');
+        }
+        
         $user = User::findOrFail($id);
         
         // Delete user's orders first
@@ -54,6 +106,4 @@ class UserController extends Controller
     // We don't need these methods for user management
     public function create() { abort(404); }
     public function store(Request $request) { abort(404); }
-    public function edit(string $id) { abort(404); }
-    public function update(Request $request, string $id) { abort(404); }
 }

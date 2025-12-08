@@ -28,6 +28,7 @@
                             <th>Serial</th>
                             <th>Name</th>
                             <th>Email</th>
+                            <th>Role</th>
                             <th>Phone</th>
                             <th>Actions</th>
                         </tr>
@@ -38,11 +39,22 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $user->name }}</td>
                             <td>{{ $user->email }}</td>
+                            <td>
+                                <span class="badge bg-{{ 
+                                    $user->role == 'super_admin' ? 'danger' : 
+                                    ($user->role == 'admin' ? 'warning' : 'secondary') 
+                                }}">
+                                    {{ ucfirst(str_replace('_', ' ', $user->role)) }}
+                                </span>
+                            </td>
                             <td>{{ $user->phone ?? 'N/A' }}</td>
                             <td>
                                 <div class="btn-group">
                                     <a href="{{ route('admin.users.show', $user->id) }}" class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-eye"></i> View
+                                    </a>
+                                    <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-pencil"></i> Edit
                                     </a>
                                     <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user? This will also delete all their orders.')">
                                         @csrf
@@ -56,7 +68,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="text-center py-4">
+                            <td colspan="6" class="text-center py-4">
                                 <i class="bi bi-people display-1 text-muted d-block mb-2"></i>
                                 <h5 class="text-muted">No users found</h5>
                             </td>

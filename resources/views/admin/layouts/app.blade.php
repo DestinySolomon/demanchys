@@ -8,6 +8,7 @@
     <!-- Favicon -->
     @php
         use App\Models\Setting;
+        $user = Auth::user();
     @endphp
     @if(Setting::getValue('favicon'))
         <link rel="shortcut icon" href="{{ asset('storage/' . Setting::getValue('favicon')) }}" type="image/x-icon">
@@ -83,6 +84,19 @@
             font-weight: bold;
             color: #000;
             flex-shrink: 0;
+            overflow: hidden;
+        }
+        
+        .logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        
+        .logo-text {
+            font-weight: bold;
+            color: #000;
         }
         
         .brand-text {
@@ -468,6 +482,39 @@
         .badge-pulse {
             animation: pulse 0.5s ease-in-out;
         }
+        
+        /* Dropdown cursor pointer */
+        .dropdown-toggle-custom {
+            cursor: pointer;
+        }
+        
+        /* Logout button fix */
+        .dropdown-item button {
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            padding: 0;
+        }
+        
+        /* Welcome message styling */
+        .welcome-message {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        /* Logo image styles */
+        .logo.has-image {
+            background: transparent;
+        }
+        
+        .logo.has-image .logo-img {
+            display: block;
+        }
+        
+        .logo.has-image .logo-text {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -475,7 +522,17 @@
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo-container">
-                <div class="logo">DL</div>
+                <div class="logo {{ Setting::getValue('logo') ? 'has-image' : '' }}">
+                    @if(Setting::getValue('logo'))
+                        <img src="{{ asset('storage/' . Setting::getValue('logo')) }}" 
+                             alt="Demanchys Lounge Logo" 
+                             class="logo-img"
+                             onerror="this.style.display='none'; this.parentElement.classList.remove('has-image');">
+                        <span class="logo-text">DL</span>
+                    @else
+                        <span class="logo-text">DL</span>
+                    @endif
+                </div>
                 <span class="brand-text text-dark">Demanchys Lounge</span>
             </div>
         </div>
@@ -494,13 +551,13 @@
                     <button class="sidebar-toggle" id="sidebarToggle">
                         <i class="bi bi-chevron-left"></i>
                     </button>
-                    <h4 class="mb-0">Welcome back, Admin! 👋</h4>
+                    <h4 class="mb-0 welcome-message">Welcome back, {{ $user->name }}! 👋</h4>
                 </div>
                 
                 <div class="topbar-right">
                     <!-- Notification Bell -->
                     <div class="dropdown">
-                        <button class="btn btn-outline-secondary btn-sm position-relative" 
+                        <button class="btn btn-outline-secondary btn-sm position-relative dropdown-toggle-custom" 
                                 id="notificationDropdown" 
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false">
@@ -539,23 +596,38 @@
                         </ul>
                     </div>
                     
-                    <!-- User Profile Dropdown -->
+                    <!-- User Profile Dropdown - FIXED -->
                     <div class="dropdown">
-                        <img src="{{ asset('assets/images/admin/profile.jpg') }}" 
-                             class="rounded-circle" 
-                             width="35" 
-                             height="35"
-                             style="object-fit: cover;"
-                             data-bs-toggle="dropdown"
-                             alt="Admin Profile">
+                        @if($user->profile_image)
+                            <img src="{{ asset('storage/' . $user->profile_image) }}?t={{ time() }}" 
+                                 class="rounded-circle dropdown-toggle-custom" 
+                                 width="35" 
+                                 height="35"
+                                 style="object-fit: cover; cursor: pointer;"
+                                 data-bs-toggle="dropdown"
+                                 alt="{{ $user->name }}"
+                                 title="{{ $user->name }}">
+                        @else
+                            <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary text-white dropdown-toggle-custom"
+                                 style="width: 35px; height: 35px; font-size: 14px; cursor: pointer;"
+                                 data-bs-toggle="dropdown"
+                                 title="{{ $user->name }}">
+                                {{ strtoupper(substr($user->name, 0, 1)) }}
+                            </div>
+                        @endif
+                        
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-person"></i> My Profile</a></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('admin.profile.edit') }}">
+                                    <i class="bi bi-person me-2"></i> My Profile
+                                </a>
+                            </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <form method="POST" action="{{ route('logout') }}">
+                                <form method="POST" action="{{ route('logout') }}" class="mb-0">
                                     @csrf
-                                    <button type="submit" class="dropdown-item text-danger">
-                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    <button type="submit" class="dropdown-item text-danger" style="cursor: pointer;">
+                                        <i class="bi bi-box-arrow-right me-2"></i> Logout
                                     </button>
                                 </form>
                             </li>
@@ -583,26 +655,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Test if Bootstrap is loaded
-        console.log('Bootstrap loaded:', typeof bootstrap !== 'undefined');
-        console.log('Modal component:', typeof bootstrap?.Modal !== 'undefined');
-        
-        // Simple modal test
-        window.testModal = function() {
-            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                const modal = new bootstrap.Modal(document.getElementById('deleteCategoryModal'));
-                modal.show();
-                console.log('Bootstrap modal shown successfully!');
-            } else {
-                console.log('Bootstrap not available');
-                // Fallback - show modal manually
-                const modal = document.getElementById('deleteCategoryModal');
-                modal.style.display = 'block';
-                modal.classList.add('show');
-                modal.style.background = 'rgba(0,0,0,0.5)';
-            }
-        }
-
         // Sidebar toggle functionality
         document.getElementById('sidebarToggle').addEventListener('click', function() {
             const sidebar = document.getElementById('sidebar');
@@ -638,7 +690,7 @@
             }
         });
 
-        // Notification System
+        // Notification System - PRODUCTION READY
         class NotificationSystem {
             constructor() {
                 this.pollingInterval = null;
@@ -679,16 +731,15 @@
                         dataType: 'json'
                     });
 
-                    this.renderNotifications(response.notifications);
-                    this.updateBadge(response.unread_count);
+                    if (response && Array.isArray(response.notifications)) {
+                        this.renderNotifications(response.notifications);
+                        this.updateBadge(response.unread_count || 0);
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
                 } catch (error) {
                     console.error('Error loading notifications:', error);
-                    $('#notificationsList').html(`
-                        <div class="text-center py-3">
-                            <i class="bi bi-exclamation-triangle text-warning fs-4"></i>
-                            <p class="text-muted mt-2">Failed to load notifications</p>
-                        </div>
-                    `);
+                    this.showError('Failed to load notifications');
                 }
             }
 
@@ -705,26 +756,33 @@
 
                 let html = '<div class="list-group list-group-flush">';
                 
-                notifications.forEach(notification => {
-                    const iconClass = this.getIconClass(notification.type);
-                    const timeAgo = this.getTimeAgo(notification.created_at);
-                    const readClass = notification.read_at ? 'read' : 'unread';
+                notifications.forEach((notification) => {
+                    // Extract data from notification
+                    let title = notification.title || 'Notification';
+                    let message = notification.message || 'No details available';
+                    let type = notification.type || 'system';
+                    let createdAt = notification.created_at || new Date().toISOString();
+                    let readAt = notification.read_at;
+                    let notificationId = notification.id;
+                    let timeAgo = notification.time_ago || this.getTimeAgo(createdAt);
+                    
+                    const iconClass = this.getIconClass(type);
+                    const readClass = readAt ? 'read' : 'unread';
                     
                     html += `
                         <div class="list-group-item notification-item ${readClass}" 
-                             data-id="${notification.id}" 
-                             data-read="${notification.read_at ? 'true' : 'false'}">
+                             data-id="${notificationId}" 
+                             data-read="${readAt ? 'true' : 'false'}">
                             <div class="d-flex align-items-start">
                                 <div class="notification-icon ${iconClass}">
-                                    <i class="bi ${this.getIcon(notification.type)}"></i>
+                                    <i class="bi ${this.getIcon(type)}"></i>
                                 </div>
                                 <div class="flex-grow-1">
                                     <div class="d-flex justify-content-between align-items-start">
-                                        <h6 class="mb-1">${notification.title}</h6>
+                                        <h6 class="mb-1">${this.escapeHtml(title)}</h6>
                                         <small class="notification-time">${timeAgo}</small>
                                     </div>
-                                    <p class="mb-1 small">${notification.message}</p>
-                                    ${notification.data ? `<small class="text-muted">${notification.data}</small>` : ''}
+                                    <p class="mb-1 small">${this.escapeHtml(message)}</p>
                                 </div>
                             </div>
                         </div>
@@ -741,6 +799,13 @@
                 });
             }
 
+            escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
             getIconClass(type) {
                 const iconMap = {
                     'order': 'order',
@@ -749,7 +814,7 @@
                     'user': 'user',
                     'contact': 'contact'
                 };
-                return iconMap[type] || 'system';
+                return iconMap[type] || iconMap[type?.toLowerCase()] || 'system';
             }
 
             getIcon(type) {
@@ -760,18 +825,26 @@
                     'user': 'bi-person-plus',
                     'contact': 'bi-envelope'
                 };
-                return iconMap[type] || 'bi-bell';
+                return iconMap[type] || iconMap[type?.toLowerCase()] || 'bi-bell';
             }
 
             getTimeAgo(dateString) {
-                const date = new Date(dateString);
-                const now = new Date();
-                const seconds = Math.floor((now - date) / 1000);
-                
-                if (seconds < 60) return 'just now';
-                if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
-                if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
-                return Math.floor(seconds / 86400) + 'd ago';
+                try {
+                    const date = new Date(dateString);
+                    if (isNaN(date.getTime())) {
+                        return 'recently';
+                    }
+                    
+                    const now = new Date();
+                    const seconds = Math.floor((now - date) / 1000);
+                    
+                    if (seconds < 60) return 'just now';
+                    if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+                    if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+                    return Math.floor(seconds / 86400) + 'd ago';
+                } catch (error) {
+                    return 'recently';
+                }
             }
 
             updateBadge(count) {
@@ -781,7 +854,7 @@
                 const $badge = $('#notificationBadge');
                 
                 if (count > 0) {
-                    $badge.text(count).show();
+                    $badge.text(count > 99 ? '99+' : count).show();
                     
                     // Add pulse animation for new notifications
                     if (count > this.unreadCount) {
@@ -813,6 +886,11 @@
                     this.updateBadge(this.unreadCount);
                 } catch (error) {
                     console.error('Error marking notification as read:', error);
+                    // Still update UI even if server fails
+                    $(element).removeClass('unread').addClass('read');
+                    $(element).attr('data-read', 'true');
+                    this.unreadCount = Math.max(0, this.unreadCount - 1);
+                    this.updateBadge(this.unreadCount);
                 }
             }
 
@@ -834,12 +912,43 @@
                     this.unreadCount = 0;
                     this.updateBadge(0);
                     
-                    // Show success message (you can add toastr if available)
-                    alert('All notifications marked as read');
+                    // Show success message
+                    this.showToast('All notifications marked as read', 'success');
                 } catch (error) {
                     console.error('Error marking all as read:', error);
-                    alert('Failed to mark all as read');
+                    this.showToast('Failed to mark all as read', 'error');
                 }
+            }
+
+            showError(message) {
+                $('#notificationsList').html(`
+                    <div class="text-center py-3">
+                        <i class="bi bi-exclamation-triangle text-warning fs-4"></i>
+                        <p class="text-muted mt-2">${message}</p>
+                        <button class="btn btn-sm btn-outline-primary mt-2" onclick="window.notificationSystem.loadNotifications()">
+                            <i class="bi bi-arrow-clockwise"></i> Retry
+                        </button>
+                    </div>
+                `);
+            }
+
+            showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+                toast.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 1050;';
+                toast.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                document.body.appendChild(toast);
+                
+                // Auto remove after 3 seconds
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 3000);
             }
 
             startPolling() {
@@ -857,7 +966,7 @@
                         dataType: 'json'
                     });
 
-                    if (response.count > this.unreadCount) {
+                    if (response && response.count > this.unreadCount) {
                         // New notifications detected
                         this.updateBadge(response.count);
                         

@@ -71,12 +71,35 @@
         }
 
         .logo-image {
-    filter: drop-shadow(0 4px 8px rgba(255, 193, 7, 0.3));
-    transition: transform 0.3s ease;
-}
-.logo-image:hover {
-    transform: scale(1.05);
-}
+            filter: drop-shadow(0 4px 8px rgba(255, 193, 7, 0.3));
+            transition: transform 0.3s ease;
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 2rem;
+        }
+        .logo-image:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffc107;
+            margin-bottom: 2rem;
+            display: none;
+        }
+        .has-logo-image .logo-text {
+            display: none;
+        }
+        .has-logo-image .logo-image {
+            display: block;
+        }
+        .no-logo-image .logo-text {
+            display: block;
+        }
+        .no-logo-image .logo-image {
+            display: none;
+        }
         
         @keyframes float {
             0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -94,6 +117,26 @@
             color: white;
         }
         
+        /* Google Button Styles */
+        .btn-google-custom {
+            background-color: #ffffff;
+            border: 1px solid #dadce0;
+            color: #3c4043;
+            font-weight: 500;
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+        .btn-google-custom:hover {
+            background-color: #f8f9fa;
+            box-shadow: 0 1px 3px 1px rgba(66, 64, 67, 0.15);
+            color: #3c4043;
+        }
+        .btn-google-custom:active {
+            background-color: #f1f3f4;
+        }
+        .btn-google-custom:focus {
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.3);
+        }
+        
         @media (max-width: 768px) {
             .split-container {
                 flex-direction: column;
@@ -104,38 +147,54 @@
             .form-side {
                 min-height: 60vh;
             }
+            .logo-image {
+                max-width: 150px;
+            }
+            .logo-text {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
+    @php
+        use App\Models\Setting;
+    @endphp
+    
     <div class="split-container">
         <!-- Brand Side -->
-        <!-- Brand Side -->
-<div class="brand-side">
-    <!-- Animated Elements -->
-    <div class="floating-cocktail" style="top: 20%; left: 20%; animation-delay: 0s;">🍸</div>
-    <div class="floating-music" style="top: 70%; left: 80%; animation-delay: 1s;">🎵</div>
-    <div class="floating-food" style="top: 40%; left: 80%; animation-delay: 2s;">🍽️</div>
-    <div class="floating-cocktail" style="top: 80%; left: 10%; animation-delay: 3s;">🥂</div>
-    <div class="floating-music" style="top: 30%; left: 10%; animation-delay: 4s;">🎷</div>
-    <div class="floating-food" style="top: 60%; left: 70%; animation-delay: 5s;">🍷</div>
-    
-    <!-- Brand Content with Logo Image -->
-    <div class="text-center">
-        <img src="{{ asset('assets/images/logo.png') }}" 
-             alt="Demanchys Lounge" 
-             class="logo-image mb-4"
-             style="max-width: 200px; height: auto;">
-        <div class="tagline">
-            Where every moment becomes a memory. Join our exclusive community and experience luxury dining like never before.
+        <div class="brand-side {{ Setting::getValue('logo') ? 'has-logo-image' : 'no-logo-image' }}">
+            <!-- Animated Elements -->
+            <div class="floating-cocktail" style="top: 20%; left: 20%; animation-delay: 0s;">🍸</div>
+            <div class="floating-music" style="top: 70%; left: 80%; animation-delay: 1s;">🎵</div>
+            <div class="floating-food" style="top: 40%; left: 80%; animation-delay: 2s;">🍽️</div>
+            <div class="floating-cocktail" style="top: 80%; left: 10%; animation-delay: 3s;">🥂</div>
+            <div class="floating-music" style="top: 30%; left: 10%; animation-delay: 4s;">🎷</div>
+            <div class="floating-food" style="top: 60%; left: 70%; animation-delay: 5s;">🍷</div>
+            
+            <!-- Brand Content with Dynamic Logo -->
+            <div class="text-center">
+                <!-- Dynamic Logo -->
+                @if(Setting::getValue('logo'))
+                    <img src="{{ asset('storage/' . Setting::getValue('logo')) }}" 
+                         alt="Demanchys Lounge" 
+                         class="logo-image"
+                         onerror="this.style.display='none'; document.querySelector('.brand-side').classList.remove('has-logo-image'); document.querySelector('.brand-side').classList.add('no-logo-image');">
+                @endif
+                
+                <!-- Fallback Text Logo -->
+                <div class="logo-text">Demanchys Lounge</div>
+                
+                <div class="tagline">
+                    Where every moment becomes a memory. Join our exclusive community and experience luxury dining like never before.
+                </div>
+                <div class="mt-4 text-center">
+                    <div class="text-warning mb-2">🎉 Premium Dining Experience</div>
+                    <div class="text-warning mb-2">🎵 Live Music Events</div>
+                    <div class="text-warning">🌟 Exclusive Member Benefits</div>
+                </div>
+            </div>
         </div>
-        <div class="mt-4 text-center">
-            <div class="text-warning mb-2">🎉 Premium Dining Experience</div>
-            <div class="text-warning mb-2">🎵 Live Music Events</div>
-            <div class="text-warning">🌟 Exclusive Member Benefits</div>
-        </div>
-    </div>
-</div>
 
         <!-- Form Side -->
         <div class="form-side">
@@ -147,8 +206,14 @@
 
                         <!-- Google OAuth -->
                         <div class="text-center mb-4">
-                            <a href="{{ route('google.login') }}" class="btn btn-google w-100 py-2">
-                                <i class="bi bi-google me-2"></i>Continue with Google
+                            <a href="{{ route('google.login') }}" class="btn btn-google-custom w-100 py-2">
+                                <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="me-2">
+                                    <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+                                    <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+                                    <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+                                    <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+                                </svg>
+                                Continue with Google
                             </a>
                         </div>
 

@@ -268,15 +268,22 @@
     </div>
 </li>
 
-    <!-- Payment Methods -->
-<li class="mb-1">
-    <a href="{{ route('admin.payments.index') }}" 
-       class="sidebar-menu-item {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}" 
-       data-title="Payment Methods">
-        <i class="bi bi-credit-card me-3"></i>
-        <span>Payment Methods</span>
-    </a>
-</li>
+    <!-- Payment Methods - Only for Super Admin -->
+    @php
+        $user = Auth::user();
+        $isSuperAdmin = $user->role === 'super_admin';
+    @endphp
+    
+    @if($isSuperAdmin)
+    <li class="mb-1">
+        <a href="{{ route('admin.payments.index') }}" 
+           class="sidebar-menu-item {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}" 
+           data-title="Payment Methods">
+            <i class="bi bi-credit-card me-3"></i>
+            <span>Payment Methods</span>
+        </a>
+    </li>
+    @endif
 
    <!-- Settings -->
 <li class="mb-1">

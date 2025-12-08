@@ -38,12 +38,13 @@ class BaseNotification extends Notification
      * Get the array representation of the notification.
      */
     public function toArray(object $notifiable): array
-    {
-        return [
-            'title' => $this->title,
-            'message' => $this->message,
-            'data' => $this->data,
-            'type' => $this->notificationType
-        ];
-    }
+{
+    // This array gets saved to the 'data' column
+    return [
+        'title' => $this->title, // This goes to 'data' column as JSON
+        'message' => $this->message, // This goes to 'data' column as JSON  
+        'data' => $this->data, // Additional data
+        'type' => $this->notificationType // Notification type
+    ];
+}
 }

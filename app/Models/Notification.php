@@ -2,91 +2,44 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\DatabaseNotification;
 
-class Notification extends Model
+class Notification extends DatabaseNotification
 {
-    use HasFactory;
-
-    protected $fillable = [
-        'type',
-        'title',
-        'message',
-        'data',
-        'notifiable_type',
-        'notifiable_id',
-        'read_at'
-    ];
-
-    protected $casts = [
-        'data' => 'array',
-        'read_at' => 'datetime'
-    ];
-
     /**
-     * Get the notifiable entity that owns the notification.
+     * Get the notification's type from data.
      */
-    public function notifiable()
+    public function getNotificationTypeAttribute()
     {
-        return $this->morphTo();
+        $data = $this->data;
+        return $data['type'] ?? 'system';
     }
 
     /**
-     * Scope a query to only include unread notifications.
+     * Get the notification's title from data.
      */
-    public function scopeUnread($query)
+    public function getNotificationTitleAttribute()
     {
-        return $query->whereNull('read_at');
+        $data = $this->data;
+        return $data['title'] ?? 'Notification';
     }
 
     /**
-     * Scope a query to only include read notifications.
+     * Get the notification's message from data.
      */
-    public function scopeRead($query)
+    public function getNotificationMessageAttribute()
     {
-        return $query->whereNotNull('read_at');
+        $data = $this->data;
+        return $data['message'] ?? '';
     }
 
     /**
-     * Scope a query to filter by type.
-     */
-    public function scopeOfType($query, $type)
-    {
-        return $query->where('type', $type);
-    }
-
-    /**
-     * Mark the notification as read.
-     */
-    public function markAsRead()
-    {
-        if (is_null($this->read_at)) {
-            $this->update(['read_at' => now()]);
-        }
-    }
-
-    /**
-     * Check if notification is read.
-     */
-    public function isRead()
-    {
-        return !is_null($this->read_at);
-    }
-
-    /**
-     * Check if notification is unread.
-     */
-    public function isUnread()
-    {
-        return is_null($this->read_at);
-    }
-
-    /**
-     * Get notification icon based on type.
+     * Get notification icon.
      */
     public function getIconAttribute()
     {
+        $type = $this->notification_type;
+        
         $icons = [
             'order' => 'bi-cart',
             'booking' => 'bi-calendar-check',
@@ -96,38 +49,38 @@ class Notification extends Model
             'delivery' => 'bi-truck'
         ];
 
-        return $icons[$this->type] ?? 'bi-bell';
+        return $icons[$type] ?? 'bi-bell';
     }
 
     /**
-     * Get notification icon color class based on type.
+     * Get notification icon class.
      */
     public function getIconClassAttribute()
     {
+        $type = $this->notification_type;
+        
         $classes = [
             'order' => 'order',
             'booking' => 'booking',
             'system' => 'system',
             'user' => 'user',
             'contact' => 'contact',
-            'delivery' => 'order' // same as order for delivery
+            'delivery' => 'order'
         ];
 
-        return $classes[$this->type] ?? 'system';
+        return $classes[$type] ?? 'system';
     }
 
     /**
-     * Create a new notification.
+     * Get formatted time ago.
      */
-    public static function createNotification($type, $title, $message, $notifiable, $data = null)
+    public function getTimeAgoAttribute()
     {
-        return self::create([
-            'type' => $type,
-            'title' => $title,
-            'message' => $message,
-            'data' => $data,
-            'notifiable_type' => get_class($notifiable),
-            'notifiable_id' => $notifiable->id
-        ]);
+        $seconds = now()->diffInSeconds($this->created_at);
+        
+        if ($seconds < 60) return 'just now';
+        if ($seconds < 3600) return floor($seconds / 60) . 'm ago';
+        if ($seconds < 86400) return floor($seconds / 3600) . 'h ago';
+        return floor($seconds / 86400) . 'd ago';
     }
 }

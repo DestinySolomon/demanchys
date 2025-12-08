@@ -2,50 +2,45 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
         'phone',
         'address',
-        'role'
+        'role',
+        'mobile_number',
+        'bio',
+        'profile_image',
+        'facebook_url',
+        'twitter_url',
+        'instagram_url',
+        'linkedin_url',
     ];
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['admin', 'super_admin']);
     }
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -54,17 +49,11 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Get the orders for the user.
-     */
     public function orders()
     {
         return $this->hasMany(Order::class);
     }
 
-    /**
-     * Get user's order statistics
-     */
     public function getOrderStatistics()
     {
         return [
@@ -74,4 +63,12 @@ class User extends Authenticatable
             'cancelled' => $this->orders()->where('order_status', 'cancelled')->count(),
         ];
     }
+
+    /**
+ * Get the user's wishlist items.
+ */
+public function wishlists()
+{
+    return $this->hasMany(Wishlist::class);
+}
 }

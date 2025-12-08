@@ -118,4 +118,12 @@ class MenuItem extends Model
     {
         return $query->where('menu_category_id', $categoryId);
     }
+
+    /**
+ * Get the wishlist entries for this menu item.
+ */
+public function wishlistedBy()
+{
+    return $this->hasMany(Wishlist::class);
+}
 }

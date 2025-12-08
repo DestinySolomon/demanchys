@@ -27,6 +27,7 @@
         box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         transition: transform .2s;
         height: 100%;
+        position: relative;
     }
 
     .menu-card:hover {
@@ -199,6 +200,73 @@
         padding: 8px 12px !important;
     }
 
+    /* Wishlist button styles */
+    .wishlist-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        z-index: 10;
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .wishlist-btn:hover {
+        background: rgba(0, 0, 0, 0.8);
+        transform: scale(1.1);
+    }
+
+    .wishlist-btn i {
+        font-size: 18px;
+    }
+
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+        border-color: #dc3545;
+    }
+
+    .btn-danger:hover {
+        background-color: #bb2d3b;
+        border-color: #b02a37;
+    }
+
+    /* Image container for positioning */
+    .image-container {
+        position: relative;
+        width: 100%;
+        height: 160px;
+        overflow: hidden;
+    }
+
+    .image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .menu-card:hover .image-container img {
+        transform: scale(1.05);
+    }
+
     /* Fix huge empty space under navbar on mobile */
     @media (max-width: 576px) {
         body {
@@ -209,20 +277,36 @@
             margin-top: 10px !important;
         }
 
-        .menu-card img {
-            height: 110px;
+        .image-container {
+            height: 120px;
         }
 
         .menu-item-name {
-            font-size: 14px !important;
+            font-size: 16px !important;
         }
 
         .menu-item-description {
-            font-size: 11px !important;
+            font-size: 12px !important;
         }
 
         .menu-item-price {
-            font-size: 14px !important;
+            font-size: 16px !important;
+        }
+
+        .wishlist-btn {
+            width: 32px;
+            height: 32px;
+            top: 8px;
+            right: 8px;
+        }
+
+        .wishlist-btn i {
+            font-size: 16px;
+        }
+
+        .btn-outline-custom {
+            font-size: 13px;
+            padding: 6px 12px;
         }
     }
 
@@ -241,7 +325,22 @@
             @forelse($category->items as $item)
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                     <div class="menu-card">
-                        <img src="{{ $item->image_url ?? asset('assets/placeholder_food.jpg') }}" alt="{{ $item->name }}">
+                        <!-- Image Container with Wishlist Button -->
+                        <div class="image-container">
+                            <img src="{{ $item->image_url ?? asset('assets/placeholder_food.jpg') }}" alt="{{ $item->name }}">
+                            
+                            <!-- Wishlist Button (Top Right Corner) -->
+                            @auth
+                            <button type="button" onclick="addToWishlist({{ $item->id }})" 
+                                    class="btn btn-outline-danger wishlist-btn"
+                                    title="Add to Wishlist"
+                                    data-item-id="{{ $item->id }}"
+                                    id="wishlist-btn-{{ $item->id }}">
+                                <i class="bi bi-heart"></i>
+                            </button>
+                            @endauth
+                        </div>
+                        
                         <div class="menu-card-body">
                             @if(!empty($item->availability))
                                 <span class="availability-tag {{ strtolower($item->availability) === 'daily' ? 'daily' : 'ondemand' }}">
@@ -254,7 +353,7 @@
                             <div class="menu-item-price">₦{{ number_format($item->price) }}</div>
 
                             <div class="d-flex gap-2 mt-3">
-                                <!-- Only Customize button remains -->
+                                <!-- Customize Button -->
                                 <button class="btn btn-outline-custom w-100 customize-btn"
                                         data-id="{{ $item->id }}"
                                         data-category="{{ strtolower($category->name) }}">
@@ -472,7 +571,99 @@
 </div>
 
 @push('scripts')
+
 <script>
+// Wait for jQuery to be ready
+$(document).ready(function() {
+    console.log('jQuery loaded and ready');
+    
+    // Your existing wishlist JavaScript goes here
+    function addToWishlist(menuItemId) {
+        console.log('Adding to wishlist:', menuItemId);
+        
+        const btn = document.getElementById(`wishlist-btn-${menuItemId}`);
+        if (!btn) return;
+        
+        // Show loading state
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-heart-half"></i>';
+        btn.disabled = true;
+        
+        $.ajax({
+            url: '{{ route("user.wishlist.add") }}',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                menu_item_id: menuItemId
+            },
+            success: function(response) {
+                console.log('Response:', response);
+                
+                if (response.success) {
+                    // Update button
+                    btn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+                    btn.classList.remove('btn-outline-danger');
+                    btn.classList.add('btn-danger');
+                    btn.setAttribute('onclick', `removeFromWishlistMenu(${menuItemId})`);
+                    btn.setAttribute('title', 'Remove from Wishlist');
+                    btn.disabled = false;
+                    
+                    // Show success
+                    Swal.fire({
+                        title: 'Added!',
+                        text: response.message,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    Swal.fire({
+                        title: 'Already in Wishlist',
+                        text: response.message,
+                        icon: 'info',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            },
+            error: function(xhr) {
+                console.error('Error:', xhr.responseText);
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+                
+                if (xhr.status === 401) {
+                    Swal.fire({
+                        title: 'Login Required',
+                        text: 'Please login to add items to wishlist',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Login',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '{{ route("login") }}';
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Something went wrong',
+                        icon: 'error',
+                        timer: 2000
+                    });
+                }
+            }
+        });
+    }
+    
+    // Make function available globally
+    window.addToWishlist = addToWishlist;
+    
+    console.log('Wishlist system initialized with jQuery');
+});
+
 document.addEventListener('DOMContentLoaded', function () {
     // helper: format price
     function formatPrice(n) {
@@ -989,6 +1180,208 @@ document.addEventListener('DOMContentLoaded', function () {
             if (document.getElementById('grillAddonsList')) document.getElementById('grillAddonsList').innerHTML = '';
         });
     });
+});
+
+// ============================================
+// W I S H L I S T   F U N C T I O N A L I T Y
+// ============================================
+
+// Wishlist functionality
+function addToWishlist(menuItemId) {
+    const btn = document.getElementById(`wishlist-btn-${menuItemId}`);
+    if (!btn) return;
+    
+    // Show loading state
+    const originalHTML = btn.innerHTML;
+    const originalClass = btn.className;
+    btn.innerHTML = '<i class="bi bi-heart-half"></i>';
+    btn.className = 'wishlist-btn btn btn-secondary';
+    btn.disabled = true;
+    
+    $.ajax({
+        url: '{{ route("user.wishlist.add") }}',
+        method: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            menu_item_id: menuItemId
+        },
+        success: function(response) {
+            if (response.success) {
+                // Update button to show "in wishlist" state
+                btn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+                btn.className = 'wishlist-btn btn btn-danger';
+                btn.setAttribute('onclick', `removeFromWishlistMenu(${menuItemId})`);
+                btn.setAttribute('title', 'Remove from Wishlist');
+                btn.disabled = false;
+                
+                // Show success message
+                Swal.fire({
+                    title: 'Added to Wishlist!',
+                    text: response.message,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                
+                // Update wishlist count in sidebar
+                updateWishlistCount(response.wishlist_count);
+            } else {
+                // Already in wishlist
+                btn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+                btn.className = 'wishlist-btn btn btn-danger';
+                btn.setAttribute('onclick', `removeFromWishlistMenu(${menuItemId})`);
+                btn.setAttribute('title', 'Remove from Wishlist');
+                btn.disabled = false;
+                
+                Swal.fire({
+                    title: 'Already in Wishlist',
+                    text: response.message,
+                    icon: 'info',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        },
+        error: function(xhr) {
+            // Restore original state
+            btn.innerHTML = originalHTML;
+            btn.className = originalClass;
+            btn.disabled = false;
+            
+            if (xhr.status === 401) {
+                // Not authenticated
+                Swal.fire({
+                    title: 'Login Required',
+                    text: 'Please login to add items to your wishlist',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Login',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '{{ route("login") }}';
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Something went wrong. Please try again.',
+                    icon: 'error',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        }
+    });
+}
+
+// Remove from wishlist (for menu page)
+function removeFromWishlistMenu(menuItemId) {
+    const btn = document.getElementById(`wishlist-btn-${menuItemId}`);
+    if (!btn) return;
+    
+    Swal.fire({
+        title: 'Remove from Wishlist?',
+        text: 'Are you sure you want to remove this item from your wishlist?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, remove it',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#dc3545',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading state
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-heart-half"></i>';
+            btn.disabled = true;
+            
+            $.ajax({
+                url: '{{ route("user.wishlist.remove", "") }}/' + menuItemId,
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    _method: 'DELETE'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update button appearance
+                        btn.innerHTML = '<i class="bi bi-heart"></i>';
+                        btn.className = 'wishlist-btn btn btn-outline-danger';
+                        btn.setAttribute('onclick', `addToWishlist(${menuItemId})`);
+                        btn.setAttribute('title', 'Add to Wishlist');
+                        btn.disabled = false;
+                        
+                        // Update wishlist count
+                        updateWishlistCount(response.wishlist_count);
+                        
+                        Swal.fire({
+                            title: 'Removed!',
+                            text: response.message,
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                },
+                error: function() {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Something went wrong. Please try again.',
+                        icon: 'error',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+    });
+}
+
+// Update wishlist count across navbar, mobile and sidebar
+function updateWishlistCount(count) {
+    // Find all links that point to wishlist (desktop/mobile/sidebar)
+    const wishlistLinks = document.querySelectorAll('a[href*="/wishlist"], a[href*="wishlist"]');
+
+    wishlistLinks.forEach(link => {
+        // Try navbar style badge (.badge-count) first
+        let badge = link.querySelector('.badge-count') || link.querySelector('.badge');
+
+        if (count > 0) {
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = badge.classList.contains('badge-count') ? 'flex' : 'inline-block';
+            } else {
+                const newBadge = document.createElement('span');
+                if (link.classList.contains('nav-icon-btn') || link.classList.contains('mobile-icon')) {
+                    newBadge.className = 'badge-count';
+                    newBadge.style.display = 'flex';
+                } else {
+                    newBadge.className = 'badge bg-warning ms-auto';
+                    newBadge.style.display = 'inline-block';
+                }
+                newBadge.textContent = count;
+                link.appendChild(newBadge);
+            }
+        } else {
+            if (badge) badge.style.display = 'none';
+        }
+    });
+
+    // Update any textual counters
+    const textCounters = document.querySelectorAll('.wishlist-count');
+    textCounters.forEach(el => el.textContent = count);
+}
+
+// Check wishlist status on page load
+document.addEventListener('DOMContentLoaded', function() {
+    @auth
+    // Optional: Check which items are already in wishlist and update buttons
+    // This would require an additional API endpoint to get user's wishlist items
+    // For now, buttons will update when clicked
+    @endauth
 });
 </script>
 @endpush
