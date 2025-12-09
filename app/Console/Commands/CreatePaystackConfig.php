@@ -1,5 +1,46 @@
 <?php
 
+namespace App\Console\Commands;
+
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
+
+class CreatePaystackConfig extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'paystack:config';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Create Paystack configuration file';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
+    {
+        $configPath = config_path('paystack.php');
+        
+        // Check if config file already exists
+        if (File::exists($configPath)) {
+            if ($this->confirm('Paystack config file already exists. Overwrite?')) {
+                File::delete($configPath);
+            } else {
+                $this->info('Operation cancelled.');
+                return;
+            }
+        }
+        
+        $configContent = <<<'PHP'
+<?php
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -87,3 +128,25 @@ return [
         'additional_charge' => 100, // Additional charge in kobo
     ],
 ];
+PHP;
+
+        // Create the config directory if it doesn't exist
+        if (!File::exists(config_path())) {
+            File::makeDirectory(config_path(), 0755, true);
+        }
+        
+        // Write the config file
+        File::put($configPath, $configContent);
+        
+        $this->info('Paystack configuration file created successfully at: ' . $configPath);
+        $this->line('');
+        $this->info('Next steps:');
+        $this->line('1. Add your Paystack keys to your .env file:');
+        $this->line('   PAYSTACK_PUBLIC_KEY=pk_test_xxxxxx');
+        $this->line('   PAYSTACK_SECRET_KEY=sk_test_xxxxxx');
+        $this->line('   PAYSTACK_MERCHANT_EMAIL=your@email.com');
+        $this->line('');
+        $this->info('2. Test the configuration by running:');
+        $this->line('   php artisan paystack:test');
+    }
+}

@@ -1368,10 +1368,10 @@ class UserDashboardController extends Controller
         ));
     }
 
-    /**
-     * Process checkout (UPDATED - now requires delivery_type)
-     */
-    public function processCheckout(Request $request)
+/**
+ * Process checkout (FIXED - Better Paystack integration)
+ */
+public function processCheckout(Request $request)
 {
     // Create validation rules array
     $validationRules = [
@@ -1464,7 +1464,7 @@ class UserDashboardController extends Controller
     ];
     $orderTypeShort = $deliveryTypeMap[$request->delivery_type] ?? 'E';
     
-    // Create order data for all payment methods (no verification needed)
+    // Prepare order data
     $orderData = [
         'order_number' => Order::max('order_number') ? Order::max('order_number') + 1 : 1000,
         'order_ref' => $orderRef,
@@ -1474,8 +1474,6 @@ class UserDashboardController extends Controller
         'customer_phone' => $request->customer_phone,
         'customer_address' => $request->customer_address ?? '',
         'order_type' => $orderTypeShort,
-        'order_status' => 'confirmed',
-        'payment_status' => 'paid',
         'payment_method' => $request->payment_method,
         'subtotal' => $cartSubtotal,
         'tax_amount' => $taxAmount,
@@ -1486,49 +1484,185 @@ class UserDashboardController extends Controller
         'coupon_id' => $couponId,
     ];
     
-    // Create order immediately for all payment methods
-    $order = Order::create($orderData);
-    
-    // Add order items
-    foreach ($cartItems as $item) {
-        $order->items()->create([
-            'menu_item_id' => $item->menu_item_id,
-            'item_name' => $item->menuItem->name,
-            'quantity' => $item->quantity,
-            'unit_price' => $item->menuItem->price,
-            'total_price' => $item->menuItem->price * $item->quantity,
+    // Handle different payment methods
+    if ($request->payment_method === 'card') {
+        // For card payment, initialize Paystack using cURL
+        try {
+            $paystackSecretKey = env('PAYSTACK_SECRET_KEY');
+            
+            // Validate secret key
+            if (empty($paystackSecretKey)) {
+                throw new \Exception('Paystack secret key not configured');
+            }
+            
+            // Convert amount to kobo (multiply by 100) and ensure it's an integer
+            $amountInKobo = (int)round($totalAmount * 100);
+            
+            // Prepare callback URL
+            $callbackUrl = route('user.checkout.verify-payment') . '?reference=' . $orderRef;
+            
+            // Prepare request data
+            $postData = [
+                'email' => $request->customer_email,
+                'amount' => $amountInKobo,
+                'reference' => $orderRef,
+                'callback_url' => $callbackUrl,
+                'metadata' => [
+                    'custom_fields' => [
+                        [
+                            'display_name' => 'Customer Name',
+                            'variable_name' => 'customer_name',
+                            'value' => $request->customer_name
+                        ],
+                        [
+                            'display_name' => 'Order Reference',
+                            'variable_name' => 'order_ref',
+                            'value' => $orderRef
+                        ],
+                        [
+                            'display_name' => 'Phone',
+                            'variable_name' => 'phone',
+                            'value' => $request->customer_phone
+                        ]
+                    ]
+                ]
+            ];
+            
+            // Initialize cURL
+            $curl = curl_init();
+            
+            curl_setopt_array($curl, [
+                CURLOPT_URL => "https://api.paystack.co/transaction/initialize",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => "",
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_POSTFIELDS => json_encode($postData),
+                CURLOPT_HTTPHEADER => [
+                    "Authorization: Bearer " . $paystackSecretKey,
+                    "Content-Type: application/json",
+                    "Cache-Control: no-cache",
+                ],
+                // SSL verification - use CA bundle from composer dependencies or disable if in development
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_SSL_VERIFYHOST => 0,
+            ]);
+            
+            $response = curl_exec($curl);
+            $err = curl_error($curl);
+            $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            
+            curl_close($curl);
+            
+            if ($err) {
+                throw new \Exception("cURL Error: " . $err);
+            }
+            
+            $result = json_decode($response, true);
+            
+            // Log the response for debugging
+            Log::info('Paystack initialization response', [
+                'http_code' => $httpCode,
+                'response' => $result,
+                'amount' => $amountInKobo,
+                'email' => $request->customer_email
+            ]);
+            
+            if ($httpCode === 200 && isset($result['status']) && $result['status'] === true) {
+                // Create order with pending payment status
+                $orderData['order_status'] = 'pending';
+                $orderData['payment_status'] = 'pending';
+                $orderData['payment_reference'] = $orderRef;
+                
+                $order = Order::create($orderData);
+                
+                // Add order items
+                foreach ($cartItems as $item) {
+                    $order->items()->create([
+                        'menu_item_id' => $item->menu_item_id,
+                        'item_name' => $item->menuItem->name,
+                        'quantity' => $item->quantity,
+                        'unit_price' => $item->menuItem->price,
+                        'total_price' => $item->menuItem->price * $item->quantity,
+                    ]);
+                }
+                
+                // Store order ref in session
+                session(['pending_order_ref' => $orderRef]);
+                
+                // Return Paystack authorization URL
+                return response()->json([
+                    'success' => true,
+                    'payment_method' => 'card',
+                    'authorization_url' => $result['data']['authorization_url'],
+                    'order_ref' => $orderRef
+                ]);
+            } else {
+                $errorMessage = isset($result['message']) ? $result['message'] : 'Unable to initialize payment';
+                
+                Log::error('Paystack initialization failed', [
+                    'http_code' => $httpCode,
+                    'error' => $errorMessage,
+                    'full_response' => $result
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment initialization failed: ' . $errorMessage
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Paystack initialization error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment initialization failed: ' . $e->getMessage()
+            ]);
+        }
+    } else {
+        // For cash and transfer, create order directly with confirmed status
+        $orderData['order_status'] = 'confirmed';
+        $orderData['payment_status'] = ($request->payment_method === 'cash') ? 'pending' : 'pending';
+        
+        $order = Order::create($orderData);
+        
+        // Add order items
+        foreach ($cartItems as $item) {
+            $order->items()->create([
+                'menu_item_id' => $item->menu_item_id,
+                'item_name' => $item->menuItem->name,
+                'quantity' => $item->quantity,
+                'unit_price' => $item->menuItem->price,
+                'total_price' => $item->menuItem->price * $item->quantity,
+            ]);
+        }
+        
+        // Clear cart
+        if ($user) {
+            CartItem::where('user_id', $user->id)->delete();
+        } else {
+            session()->forget('cart');
+        }
+        
+        // Clear coupon
+        session()->forget('coupon');
+        
+        // Store order ref in session for success page
+        session(['order_ref' => $orderRef]);
+        
+        // Return success with redirect URL
+        return response()->json([
+            'success' => true,
+            'payment_method' => $request->payment_method,
+            'order_ref' => $orderRef,
+            'redirect_url' => route('user.checkout.success')
         ]);
     }
-    
-    // Clear cart after order creation
-    if ($user) {
-        CartItem::where('user_id', $user->id)->delete();
-    } else {
-        session()->forget('cart');
-    }
-    
-    // Clear coupon
-    session()->forget('coupon');
-    
-    // Return success response for all payment methods
-    return response()->json([
-        'success' => true,
-        'payment_method' => $request->payment_method,
-        'order_ref' => $orderRef,
-        'redirect_url' => route('user.checkout.success'),
-    ]);
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 /**
@@ -1608,61 +1742,141 @@ public function updateItem(Request $request)
     ]);
 }
 
-    /**
-     * Verify Paystack payment
-     */
-    public function verifyPayment(Request $request)
+/**
+ * Verify Paystack payment (Using cURL)
+ */
+public function verifyPayment(Request $request)
 {
-    $reference = $request->reference;
+    $reference = $request->reference ?? $request->query('reference');
     
     if (!$reference) {
-        return redirect()->route('checkout.cancel')
+        return redirect()->route('user.checkout.cancel')
                          ->with('error', 'Invalid payment reference');
     }
     
     try {
-        // Verify payment with Paystack - FIXED KEY
-        $paystack = new \Yabacon\Paystack(env('PAYSTACK_SECRET_KEY'));
-        $transaction = $paystack->transaction->withoutverify(['reference' => $reference]);
-    
-        if ($transaction->data->status == 'success') {
-            // Find order by payment_reference (which is the same as reference)
-            $order = Order::where('payment_reference', $reference)->first();
-            
-            if ($order) {
-                $order->update([
-                    'order_status' => 'confirmed',
-                    'payment_status' => 'paid',
-                    'payment_date' => now(),
-                    'transaction_id' => $transaction->data->id,
-                ]);
-                
-                // Redirect to success page
-                return redirect()->route('checkout.success')
-                                 ->with('success', 'Payment successful! Your order has been confirmed.')
-                                 ->with('order_ref', $order->order_ref);
-            } else {
-                Log::error('Order not found for reference: ' . $reference);
-                return redirect()->route('checkout.cancel')
-                                 ->with('error', 'Order not found. Please contact support.');
-            }
+        $paystackSecretKey = env('PAYSTACK_SECRET_KEY');
+        
+        if (empty($paystackSecretKey)) {
+            throw new \Exception('Paystack secret key not configured');
         }
         
-        return redirect()->route('checkout.cancel')
-                         ->with('error', 'Payment verification failed');
+        // Initialize cURL for verification
+        $curl = curl_init();
+        
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://api.paystack.co/transaction/verify/" . rawurlencode($reference),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => [
+                "Authorization: Bearer " . $paystackSecretKey,
+                "Cache-Control: no-cache",
+            ],
+            // SSL verification - use CA bundle from composer dependencies or disable if in development
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => 0,
+        ]);
+        
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        
+        curl_close($curl);
+        
+        if ($err) {
+            throw new \Exception("cURL Error: " . $err);
+        }
+        
+        $result = json_decode($response, true);
+        
+        // Log verification response
+        Log::info('Paystack verification response', [
+            'http_code' => $httpCode,
+            'reference' => $reference,
+            'response' => $result
+        ]);
+        
+        if ($httpCode === 200 && isset($result['status']) && $result['status'] === true) {
+            $data = $result['data'];
+            
+            if ($data['status'] === 'success') {
+                // Find order by payment_reference (order_ref)
+                $order = Order::where('order_ref', $reference)
+                             ->orWhere('payment_reference', $reference)
+                             ->first();
+                
+                if ($order) {
+                    // Update order status
+                    $order->update([
+                        'order_status' => 'confirmed',
+                        'payment_status' => 'paid',
+                        'payment_date' => now(),
+                        'transaction_id' => $data['id'] ?? null,
+                    ]);
+                    
+                    // Clear cart
+                    /** @var \App\Models\User|null $user */
+                    $user = Auth::user();
+                    if ($user) {
+                        CartItem::where('user_id', $user->id)->delete();
+                    } else {
+                        session()->forget('cart');
+                    }
+                    
+                    // Clear coupon
+                    session()->forget('coupon');
+                    
+                    // Clear pending order ref
+                    session()->forget('pending_order_ref');
+                    
+                    // Store order ref for success page
+                    session(['order_ref' => $order->order_ref]);
+                    
+                    // Redirect to success page
+                    return redirect()->route('user.checkout.success')
+                                     ->with('success', 'Payment successful! Your order has been confirmed.');
+                } else {
+                    Log::error('Order not found for reference: ' . $reference);
+                    return redirect()->route('user.checkout.cancel')
+                                     ->with('error', 'Order not found. Please contact support with reference: ' . $reference);
+                }
+            } else {
+                // Payment was not successful
+                Log::warning('Payment verification failed', [
+                    'reference' => $reference,
+                    'status' => $data['status'] ?? 'unknown'
+                ]);
+                
+                return redirect()->route('user.checkout.cancel')
+                                 ->with('error', 'Payment was not successful. Status: ' . ($data['status'] ?? 'unknown'));
+            }
+        } else {
+            $errorMessage = isset($result['message']) ? $result['message'] : 'Verification failed';
+            
+            Log::error('Paystack verification error', [
+                'http_code' => $httpCode,
+                'reference' => $reference,
+                'error' => $errorMessage
+            ]);
+            
+            return redirect()->route('user.checkout.cancel')
+                             ->with('error', 'Payment verification failed: ' . $errorMessage);
+        }
         
     } catch (\Exception $e) {
-        Log::error('Paystack verification error: ' . $e->getMessage());
+        Log::error('Payment verification exception: ' . $e->getMessage(), [
+            'reference' => $reference,
+            'trace' => $e->getTraceAsString()
+        ]);
         
-        return redirect()->route('checkout.cancel')
-                         ->with('error', 'Payment verification error');
+        return redirect()->route('user.checkout.cancel')
+                         ->with('error', 'An error occurred while verifying payment. Please contact support.');
     }
 }
-
-
-
-
-    
 
     /**
      * Display checkout success page

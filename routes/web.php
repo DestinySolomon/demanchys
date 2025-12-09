@@ -52,16 +52,6 @@ Route::post('/wishlist/move-to-cart/{id}', [UserDashboardController::class, 'mov
 Route::delete('/wishlist/clear', [UserDashboardController::class, 'clearWishlist'])->name('wishlist.clear');
 
 
-
-
-// Checkout Routes (public - allow guests and authenticated users)
-Route::get('/checkout', [UserDashboardController::class, 'checkout'])->name('checkout');
-Route::post('/checkout/process', [UserDashboardController::class, 'processCheckout'])->name('checkout.process');
-Route::post('/checkout/verify-payment', [UserDashboardController::class, 'verifyPayment'])->name('checkout.verify-payment');
-Route::get('/checkout/success', [UserDashboardController::class, 'checkoutSuccess'])->name('checkout.success');
-Route::get('/checkout/cancel', [UserDashboardController::class, 'checkoutCancel'])->name('checkout.cancel');
-
-
 // Cart Routes
 Route::get('/cart', [UserDashboardController::class, 'viewCart'])->name('cart');
 Route::post('/cart/add', [UserDashboardController::class, 'addToCart'])->name('cart.add');
@@ -340,3 +330,14 @@ Route::get('/terms', function () {
 Route::get('/privacy', function () {
     return view('pages.privacy');
 })->name('privacy');
+
+
+// Checkout Routes (updated - moved OUTSIDE middleware group for Paystack callback)
+Route::get('/my-account/checkout', [UserDashboardController::class, 'checkout'])->name('user.checkout')->middleware('auth');
+Route::post('/my-account/checkout/process', [UserDashboardController::class, 'processCheckout'])->name('user.checkout.process')->middleware('auth');
+
+// Payment verification route - NO AUTH MIDDLEWARE (Paystack callback needs access)
+Route::get('/my-account/checkout/verify-payment', [UserDashboardController::class, 'verifyPayment'])->name('user.checkout.verify-payment');
+
+Route::get('/my-account/checkout/success', [UserDashboardController::class, 'checkoutSuccess'])->name('user.checkout.success')->middleware('auth');
+Route::get('/my-account/checkout/cancel', [UserDashboardController::class, 'checkoutCancel'])->name('user.checkout.cancel')->middleware('auth');

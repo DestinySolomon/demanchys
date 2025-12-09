@@ -13,6 +13,7 @@ class Order extends Model
 
     protected $fillable = [
         'order_number',
+        'order_ref',
         'user_id',
         'customer_name',
         'customer_email',
@@ -22,22 +23,32 @@ class Order extends Model
         'order_status',
         'payment_status',
         'payment_method',
+        'payment_reference',
+        'payment_date',
         'transaction_id',
         'subtotal',
+        'tax_amount',
         'delivery_fee',
+        'discount_amount',
         'discount',
         'total_amount',
         'delivery_person',
+        'delivery_person_id',
         'delivery_status',
+        'delivery_instructions',
         'order_date',
+        'coupon_id',
     ];
 
     protected $casts = [
         'subtotal' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
         'delivery_fee' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
         'discount' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'order_date' => 'datetime',
+        'payment_date' => 'datetime',
     ];
 
     // Relationships
