@@ -28,18 +28,16 @@ class MenuController extends Controller
     // MenuController.php (add near index)
 public function showItemJson($id)
 {
-    // Assuming your MenuItem model is App\Models\MenuItem and has relation addons()
     $item = MenuItem::with('addons')->find($id);
 
-    if (! $item) {
+    if (!$item) {
         return response()->json(['error' => 'Item not found'], 404);
     }
 
-
-     //fallback: ensure addons exists as array
-    if (! isset($item->addons)) {
-        $item->addons = [];
-    }
+    // Add price property to each addon for frontend
+    $item->addons->each(function($addon) {
+        $addon->price = $addon->pivot->additional_price ?? $addon->additional_price;
+    });
 
     return response()->json($item);
 }

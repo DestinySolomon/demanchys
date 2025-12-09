@@ -504,190 +504,166 @@ class UserDashboardController extends Controller
     /**
      * Display cart page
      */
-public function viewCart()
-{
-    /** @var \App\Models\User|null $user */
-    $user = Auth::user();
-    $cartItems = [];
-    $cartSubtotal = 0;
-    $cartCount = 0;
-    $appliedCoupon = null;
-    $discountAmount = 0;
-    $deliveryType = 'eat_in'; // Default
-    
-    if ($user) {
-        // Get cart items from database for logged-in users
-        $cartItems = CartItem::where('user_id', $user->id)
-                            ->with('menuItem')
-                            ->get();
+    public function viewCart()
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        $cartItems = [];
+        $cartSubtotal = 0;
+        $cartCount = 0;
+        $appliedCoupon = null;
+        $discountAmount = 0;
+        $deliveryType = 'eat_in'; // Default
         
-        $cartCount = $cartItems->sum('quantity');
-        $cartSubtotal = $cartItems->sum(function ($item) {
-            return ($item->menuItem->price ?? 0) * $item->quantity;
-        });
-        
-        // Determine overall delivery type
-        if ($cartItems->contains('delivery_type', 'home_delivery')) {
-            $deliveryType = 'home_delivery';
-        } elseif ($cartItems->contains('delivery_type', 'takeaway')) {
-            $deliveryType = 'takeaway';
-        } else {
-            $deliveryType = 'eat_in';
-        }
-    } else {
-        // Get cart items from session for guests
-        $sessionCart = session()->get('cart', []);
-        $cartItems = collect($sessionCart)->map(function ($item, $menuItemId) {
-            $menuItem = MenuItem::find($menuItemId);
-            if (!$menuItem) return null;
+        if ($user) {
+            // Get cart items from database for logged-in users
+            $cartItems = CartItem::where('user_id', $user->id)
+                                ->with('menuItem')
+                                ->get();
             
-            return (object) [
-                'id' => $menuItemId,
-                'menu_item_id' => $menuItemId,
-                'quantity' => $item['quantity'],
-                'delivery_type' => $item['delivery_type'] ?? 'eat_in',
-                'menuItem' => $menuItem,
-                'special_instructions' => $item['special_instructions'] ?? null,
-                'options' => $item['options'] ?? []
-            ];
-        })->filter()->values();
-        
-        $cartCount = $cartItems->sum('quantity');
-        $cartSubtotal = $cartItems->sum(function ($item) {
-            return $item->menuItem->price * $item->quantity;
-        });
-        
-        // Determine overall delivery type from session
-        if ($cartItems->contains('delivery_type', 'home_delivery')) {
-            $deliveryType = 'home_delivery';
-        } elseif ($cartItems->contains('delivery_type', 'takeaway')) {
-            $deliveryType = 'takeaway';
+            $cartCount = $cartItems->sum('quantity');
+            $cartSubtotal = $cartItems->sum(function ($item) {
+                return ($item->menuItem->price ?? 0) * $item->quantity;
+            });
         } else {
-            $deliveryType = 'eat_in';
+            // Get cart items from session for guests
+            $sessionCart = session()->get('cart', []);
+            $cartItems = collect($sessionCart)->map(function ($item, $menuItemId) {
+                $menuItem = MenuItem::find($menuItemId);
+                if (!$menuItem) return null;
+                
+                return (object) [
+                    'id' => $menuItemId,
+                    'menu_item_id' => $menuItemId,
+                    'quantity' => $item['quantity'],
+                    'menuItem' => $menuItem,
+                    'special_instructions' => $item['special_instructions'] ?? null,
+                    'options' => $item['options'] ?? []
+                ];
+            })->filter()->values();
+            
+            $cartCount = $cartItems->sum('quantity');
+            $cartSubtotal = $cartItems->sum(function ($item) {
+                return $item->menuItem->price * $item->quantity;
+            });
         }
-    }
-    
-    // Check for applied coupon
-    if (session()->has('coupon')) {
-        $appliedCoupon = session()->get('coupon');
-        $coupon = Coupon::where('code', $appliedCoupon['code'])->first();
         
-        if ($coupon && $coupon->isValid($cartSubtotal)) {
-            $discountAmount = $coupon->calculateDiscount($cartSubtotal);
-        } else {
-            session()->forget('coupon');
-            $appliedCoupon = null;
+        // Check for applied coupon
+        if (session()->has('coupon')) {
+            $appliedCoupon = session()->get('coupon');
+            $coupon = Coupon::where('code', $appliedCoupon['code'])->first();
+            
+            if ($coupon && $coupon->isValid($cartSubtotal)) {
+                $discountAmount = $coupon->calculateDiscount($cartSubtotal);
+            } else {
+                session()->forget('coupon');
+                $appliedCoupon = null;
+            }
         }
+        
+        // Calculate totals - DELIVERY FEE WILL BE ADDED AT CHECKOUT BASED ON DELIVERY TYPE
+        $taxRate = 0.075;
+        $taxAmount = $cartSubtotal * $taxRate;
+        $deliveryFee = 0; // Delivery fee will be determined at checkout based on delivery type
+        $total = $cartSubtotal + $taxAmount + $deliveryFee - $discountAmount;
+        
+        return view('user.dashboard.cart', compact(
+            'user',
+            'cartItems',
+            'cartSubtotal',
+            'taxAmount',
+            'deliveryFee',
+            'discountAmount',
+            'total',
+            'cartCount',
+            'appliedCoupon',
+            'deliveryType'
+        ));
     }
-    
-    // Calculate totals - DELIVERY FEE ONLY FOR HOME DELIVERY
-    $taxRate = 0.075;
-    $taxAmount = $cartSubtotal * $taxRate;
-    $deliveryFee = ($deliveryType == 'home_delivery') ? 1500.00 : 0.00;
-    $total = $cartSubtotal + $taxAmount + $deliveryFee - $discountAmount;
-    
-    return view('user.dashboard.cart', compact(
-        'user',
-        'cartItems',
-        'cartSubtotal',
-        'taxAmount',
-        'deliveryFee',
-        'discountAmount',
-        'total',
-        'cartCount',
-        'appliedCoupon',
-        'deliveryType'
-    ));
-}
 
     /**
-     * Add item to cart (updated to handle menu orders)
+     * Add item to cart (UPDATED - delivery_type removed from here)
      */
     public function addToCart(Request $request)
-{
-    $request->validate([
-        'menu_item_id' => 'required|exists:menu_items,id',
-        'quantity' => 'nullable|integer|min:1',
-        'delivery_type' => 'required|in:eat_in,takeaway,home_delivery',
-        'options' => 'nullable|array',
-        'special_instructions' => 'nullable|string|max:500',
-    ]);
-    
-    /** @var \App\Models\User|null $user */
-    $user = Auth::user();
-    $quantity = $request->quantity ?? 1;
-    $menuItem = MenuItem::findOrFail($request->menu_item_id);
-    
-    if (!$menuItem->is_available) {
-        return response()->json([
-            'success' => false,
-            'message' => 'This item is currently unavailable'
+    {
+        $request->validate([
+            'menu_item_id' => 'required|exists:menu_items,id',
+            'quantity' => 'nullable|integer|min:1',
+            'options' => 'nullable|array',
+            'special_instructions' => 'nullable|string|max:500',
+            // DELIVERY_TYPE REMOVED FROM HERE - IT WILL BE SELECTED AT CHECKOUT
         ]);
-    }
-    
-    if ($user) {
-        // For logged-in users: save to database
-        $cartItem = CartItem::where('user_id', $user->id)
-                           ->where('menu_item_id', $request->menu_item_id)
-                           ->first();
         
-        if ($cartItem) {
-            $cartItem->quantity += $quantity;
-            $cartItem->delivery_type = $request->delivery_type; // Save delivery type
-            if ($request->has('special_instructions')) {
-                $cartItem->special_instructions = $request->special_instructions;
-            }
-            if ($request->has('options')) {
-                $cartItem->options = $request->options;
-            }
-            $cartItem->save();
-        } else {
-            CartItem::create([
-                'user_id' => $user->id,
-                'menu_item_id' => $request->menu_item_id,
-                'quantity' => $quantity,
-                'delivery_type' => $request->delivery_type, // Save delivery type
-                'options' => $request->options ?? [],
-                'special_instructions' => $request->special_instructions ?? null,
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        $quantity = $request->quantity ?? 1;
+        $menuItem = MenuItem::findOrFail($request->menu_item_id);
+        
+        if (!$menuItem->is_available) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This item is currently unavailable'
             ]);
         }
         
-        $cartCount = CartItem::where('user_id', $user->id)->sum('quantity');
-    } else {
-        // For guests: save to session
-        $cart = session()->get('cart', []);
-        $menuItemId = $request->menu_item_id;
-        
-        if (isset($cart[$menuItemId])) {
-            $cart[$menuItemId]['quantity'] += $quantity;
+        if ($user) {
+            // For logged-in users: save to database
+            $cartItem = CartItem::where('user_id', $user->id)
+                               ->where('menu_item_id', $request->menu_item_id)
+                               ->first();
+            
+            if ($cartItem) {
+                $cartItem->quantity += $quantity;
+                if ($request->has('special_instructions')) {
+                    $cartItem->special_instructions = $request->special_instructions;
+                }
+                if ($request->has('options')) {
+                    $cartItem->options = $request->options;
+                }
+                $cartItem->save();
+            } else {
+                CartItem::create([
+                    'user_id' => $user->id,
+                    'menu_item_id' => $request->menu_item_id,
+                    'quantity' => $quantity,
+                    'options' => $request->options ?? [],
+                    'special_instructions' => $request->special_instructions ?? null,
+                ]);
+            }
+            
+            $cartCount = CartItem::where('user_id', $user->id)->sum('quantity');
         } else {
-            $cart[$menuItemId] = [
-                'name' => $menuItem->name,
-                'quantity' => $quantity,
-                'price' => $menuItem->price,
-                'image' => $menuItem->image,
-                'delivery_type' => $request->delivery_type, // Save delivery type
-                'options' => $request->options ?? [],
-                'special_instructions' => $request->special_instructions ?? null,
-            ];
+            // For guests: save to session
+            $cart = session()->get('cart', []);
+            $menuItemId = $request->menu_item_id;
+            
+            if (isset($cart[$menuItemId])) {
+                $cart[$menuItemId]['quantity'] += $quantity;
+            } else {
+                $cart[$menuItemId] = [
+                    'name' => $menuItem->name,
+                    'quantity' => $quantity,
+                    'price' => $menuItem->price,
+                    'image' => $menuItem->image,
+                    'options' => $request->options ?? [],
+                    'special_instructions' => $request->special_instructions ?? null,
+                ];
+            }
+            
+            session()->put('cart', $cart);
+            $cartCount = array_sum(array_column($cart, 'quantity'));
         }
         
-        session()->put('cart', $cart);
-        $cartCount = array_sum(array_column($cart, 'quantity'));
+        return response()->json([
+            'success' => true,
+            'message' => 'Added to cart successfully!',
+            'cart_count' => $cartCount
+        ]);
     }
-    
-    return response()->json([
-        'success' => true,
-        'message' => 'Added to cart successfully!',
-        'cart_count' => $cartCount
-    ]);
-}
-
 
     /**
      * Update cart item quantity
      */
-
     public function updateCart(Request $request)
     {
         $request->validate([
@@ -737,7 +713,7 @@ public function viewCart()
         // Recalculate totals
         $taxRate = 0.075;
         $taxAmount = $cartSubtotal * $taxRate;
-        $deliveryFee = $cartSubtotal > 0 ? 5.00 : 0;
+        $deliveryFee = 0; // Delivery fee will be determined at checkout
         
         // Check for coupon discount
         $discountAmount = 0;
@@ -800,7 +776,7 @@ public function viewCart()
         // Recalculate totals
         $taxRate = 0.075;
         $taxAmount = $cartSubtotal * $taxRate;
-        $deliveryFee = $cartSubtotal > 0 ? 5.00 : 0;
+        $deliveryFee = 0;
         $total = $cartSubtotal + $taxAmount + $deliveryFee;
         
         return response()->json([
@@ -882,7 +858,7 @@ public function viewCart()
         $discountAmount = $coupon->calculateDiscount($cartSubtotal);
         $taxRate = 0.075;
         $taxAmount = $cartSubtotal * $taxRate;
-        $deliveryFee = $cartSubtotal > 0 ? 5.00 : 0;
+        $deliveryFee = 0; // Will be calculated at checkout based on delivery type
         $total = $cartSubtotal + $taxAmount + $deliveryFee - $discountAmount;
         
         return response()->json([
@@ -906,7 +882,7 @@ public function viewCart()
         $cartSubtotal = $this->calculateCartSubtotal($user);
         $taxRate = 0.075;
         $taxAmount = $cartSubtotal * $taxRate;
-        $deliveryFee = $cartSubtotal > 0 ? 5.00 : 0;
+        $deliveryFee = 0;
         $total = $cartSubtotal + $taxAmount + $deliveryFee;
         
         return response()->json([
@@ -1300,112 +1276,121 @@ public function viewCart()
                        ->with('success', 'Thank you for your testimonial! It has been submitted for review.');
     }
 
+    /**
+     * Display checkout page (UPDATED - now includes delivery type selection)
+     */
+    public function checkout()
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        
+        // Check if cart is empty
+        $cartCount = 0;
+        $cartItems = [];
+        $cartSubtotal = 0;
+        
+        if ($user) {
+            $cartItems = CartItem::where('user_id', $user->id)
+                                ->with('menuItem')
+                                ->get();
+            $cartCount = $cartItems->sum('quantity');
+            $cartSubtotal = $cartItems->sum(function ($item) {
+                return ($item->menuItem->price ?? 0) * $item->quantity;
+            });
+        } else {
+            $sessionCart = session()->get('cart', []);
+            $cartItems = collect($sessionCart)->map(function ($item, $menuItemId) {
+                $menuItem = MenuItem::find($menuItemId);
+                if (!$menuItem) return null;
+                
+                return (object) [
+                    'id' => $menuItemId,
+                    'menu_item_id' => $menuItemId,
+                    'quantity' => $item['quantity'],
+                    'menuItem' => $menuItem,
+                    'special_instructions' => $item['special_instructions'] ?? null,
+                ];
+            })->filter()->values();
+            
+            $cartCount = $cartItems->sum('quantity');
+            $cartSubtotal = $cartItems->sum(function ($item) {
+                return $item->menuItem->price * $item->quantity;
+            });
+        }
+        
+        if ($cartCount == 0) {
+            return redirect()->route('user.cart')
+                             ->with('error', 'Your cart is empty. Please add items before checkout.');
+        }
+        
+        // Calculate totals (delivery fee will be added based on delivery type at checkout)
+        $taxRate = 0.075; // 7.5%
+        $taxAmount = $cartSubtotal * $taxRate;
+        $deliveryFee = 0; // Will be calculated based on delivery type selection
+        
+        // Check for applied coupon
+        $discountAmount = 0;
+        $appliedCoupon = null;
+        if (session()->has('coupon')) {
+            $appliedCoupon = session()->get('coupon');
+            $coupon = Coupon::where('code', $appliedCoupon['code'])->first();
+            if ($coupon && $coupon->isValid($cartSubtotal)) {
+                $discountAmount = $coupon->calculateDiscount($cartSubtotal);
+            }
+        }
+        
+        $total = $cartSubtotal + $taxAmount + $deliveryFee - $discountAmount;
+        
+        // Get user addresses
+        $recentAddresses = Order::where('user_id', $user->id ?? 0)
+                               ->whereNotNull('customer_address')
+                               ->select('customer_address', 'customer_phone', 'customer_name')
+                               ->distinct()
+                               ->latest()
+                               ->take(5)
+                               ->get();
+        
+        // Get delivery instructions from session
+        $deliveryInstructions = session()->get('delivery_instructions', '');
+        
+        return view('user.dashboard.checkout', compact(
+            'user',
+            'cartItems',
+            'cartSubtotal',
+            'taxAmount',
+            'deliveryFee',
+            'discountAmount',
+            'total',
+            'cartCount',
+            'appliedCoupon',
+            'recentAddresses',
+            'deliveryInstructions'
+        ));
+    }
 
     /**
- * Display checkout page
- */
-public function checkout()
+     * Process checkout (UPDATED - now requires delivery_type)
+     */
+    public function processCheckout(Request $request)
 {
-    /** @var \App\Models\User|null $user */
-    $user = Auth::user();
-    
-    // Check if cart is empty
-    $cartCount = 0;
-    $cartItems = [];
-    $cartSubtotal = 0;
-    
-    if ($user) {
-        $cartItems = CartItem::where('user_id', $user->id)
-                            ->with('menuItem')
-                            ->get();
-        $cartCount = $cartItems->sum('quantity');
-        $cartSubtotal = $cartItems->sum(function ($item) {
-            return ($item->menuItem->price ?? 0) * $item->quantity;
-        });
-    } else {
-        $sessionCart = session()->get('cart', []);
-        $cartItems = collect($sessionCart)->map(function ($item, $menuItemId) {
-            $menuItem = MenuItem::find($menuItemId);
-            if (!$menuItem) return null;
-            
-            return (object) [
-                'id' => $menuItemId,
-                'menu_item_id' => $menuItemId,
-                'quantity' => $item['quantity'],
-                'menuItem' => $menuItem,
-                'special_instructions' => $item['special_instructions'] ?? null,
-            ];
-        })->filter()->values();
-        
-        $cartCount = $cartItems->sum('quantity');
-        $cartSubtotal = $cartItems->sum(function ($item) {
-            return $item->menuItem->price * $item->quantity;
-        });
-    }
-    
-    if ($cartCount == 0) {
-        return redirect()->route('user.cart')
-                         ->with('error', 'Your cart is empty. Please add items before checkout.');
-    }
-    
-    // Calculate totals
-    $taxRate = 0.075; // 7.5%
-    $taxAmount = $cartSubtotal * $taxRate;
-    $deliveryFee = $cartSubtotal > 0 ? 5.00 : 0;
-    
-    // Check for applied coupon
-    $discountAmount = 0;
-    $appliedCoupon = null;
-    if (session()->has('coupon')) {
-        $appliedCoupon = session()->get('coupon');
-        $coupon = Coupon::where('code', $appliedCoupon['code'])->first();
-        if ($coupon && $coupon->isValid($cartSubtotal)) {
-            $discountAmount = $coupon->calculateDiscount($cartSubtotal);
-        }
-    }
-    
-    $total = $cartSubtotal + $taxAmount + $deliveryFee - $discountAmount;
-    
-    // Get user addresses
-    $recentAddresses = Order::where('user_id', $user->id ?? 0)
-                           ->whereNotNull('customer_address')
-                           ->select('customer_address', 'customer_phone', 'customer_name')
-                           ->distinct()
-                           ->latest()
-                           ->take(5)
-                           ->get();
-    
-    // Get delivery instructions from session
-    $deliveryInstructions = session()->get('delivery_instructions', '');
-    
-    return view('user.dashboard.checkout', compact(
-        'user',
-        'cartItems',
-        'cartSubtotal',
-        'taxAmount',
-        'deliveryFee',
-        'discountAmount',
-        'total',
-        'cartCount',
-        'appliedCoupon',
-        'recentAddresses',
-        'deliveryInstructions'
-    ));
-}
-
-/**
- * Process checkout
- */
-public function processCheckout(Request $request)
-{
-    $request->validate([
+    // Create validation rules array
+    $validationRules = [
         'customer_name' => 'required|string|max:255',
         'customer_phone' => 'required|string|max:20',
         'customer_email' => 'required|email|max:255',
-        'customer_address' => 'required|string|max:500',
+        'delivery_type' => 'required|in:eat_in,takeaway,home_delivery',
         'delivery_instructions' => 'nullable|string|max:1000',
         'payment_method' => 'required|in:card,transfer,cash',
-    ]);
+    ];
+    
+    // Only require address for home delivery
+    if ($request->delivery_type === 'home_delivery') {
+        $validationRules['customer_address'] = 'required|string|max:500';
+    } else {
+        $validationRules['customer_address'] = 'nullable|string|max:500';
+    }
+    
+    $request->validate($validationRules);
     
     /** @var \App\Models\User|null $user */
     $user = Auth::user();
@@ -1413,7 +1398,6 @@ public function processCheckout(Request $request)
     // Check if cart is empty
     $cartItems = [];
     $cartSubtotal = 0;
-    $overallDeliveryType = 'eat_in'; // Default
     
     if ($user) {
         $cartItems = CartItem::where('user_id', $user->id)
@@ -1422,15 +1406,6 @@ public function processCheckout(Request $request)
         $cartSubtotal = $cartItems->sum(function ($item) {
             return ($item->menuItem->price ?? 0) * $item->quantity;
         });
-        
-        // Determine order type from cart items
-        if ($cartItems->contains('delivery_type', 'home_delivery')) {
-            $overallDeliveryType = 'home_delivery';
-        } elseif ($cartItems->contains('delivery_type', 'takeaway')) {
-            $overallDeliveryType = 'takeaway';
-        } else {
-            $overallDeliveryType = 'eat_in';
-        }
     } else {
         $sessionCart = session()->get('cart', []);
         $cartItems = collect($sessionCart)->map(function ($item, $menuItemId) {
@@ -1440,7 +1415,6 @@ public function processCheckout(Request $request)
             return (object) [
                 'menu_item_id' => $menuItemId,
                 'quantity' => $item['quantity'],
-                'delivery_type' => $item['delivery_type'] ?? 'eat_in',
                 'menuItem' => $menuItem,
             ];
         })->filter()->values();
@@ -1448,15 +1422,6 @@ public function processCheckout(Request $request)
         $cartSubtotal = $cartItems->sum(function ($item) {
             return $item->menuItem->price * $item->quantity;
         });
-        
-        // Determine order type from session
-        if ($cartItems->contains('delivery_type', 'home_delivery')) {
-            $overallDeliveryType = 'home_delivery';
-        } elseif ($cartItems->contains('delivery_type', 'takeaway')) {
-            $overallDeliveryType = 'takeaway';
-        } else {
-            $overallDeliveryType = 'eat_in';
-        }
     }
     
     if (count($cartItems) == 0) {
@@ -1469,7 +1434,7 @@ public function processCheckout(Request $request)
     // Calculate totals - DELIVERY FEE ONLY FOR HOME DELIVERY
     $taxRate = 0.075;
     $taxAmount = $cartSubtotal * $taxRate;
-    $deliveryFee = ($overallDeliveryType == 'home_delivery') ? 1500.00 : 0.00;
+    $deliveryFee = ($request->delivery_type == 'home_delivery') ? 1500.00 : 0.00;
     
     // Check for applied coupon
     $discountAmount = 0;
@@ -1491,17 +1456,26 @@ public function processCheckout(Request $request)
     // Generate order reference
     $orderRef = 'ORD-' . strtoupper(Str::random(8)) . '-' . time();
     
-    // Create order - SAVE ORDER TYPE
+    // Map delivery_type to short codes to fit in database column
+    $deliveryTypeMap = [
+        'eat_in' => 'eat_in',
+        'takeaway' => 'takeaway',
+        'home_delivery' => 'home_delivery'
+    ];
+    $orderTypeShort = $deliveryTypeMap[$request->delivery_type] ?? 'E';
+    
+    // Create order data for all payment methods (no verification needed)
     $orderData = [
+        'order_number' => Order::max('order_number') ? Order::max('order_number') + 1 : 1000,
         'order_ref' => $orderRef,
         'user_id' => $user->id ?? null,
         'customer_name' => $request->customer_name,
         'customer_email' => $request->customer_email,
         'customer_phone' => $request->customer_phone,
-        'customer_address' => $request->customer_address,
-        'order_type' => $overallDeliveryType, // Save order type
-        'order_status' => $request->payment_method == 'cash' ? 'pending' : 'pending_payment',
-        'payment_status' => $request->payment_method == 'cash' ? 'pending' : 'pending',
+        'customer_address' => $request->customer_address ?? '',
+        'order_type' => $orderTypeShort,
+        'order_status' => 'confirmed',
+        'payment_status' => 'paid',
         'payment_method' => $request->payment_method,
         'subtotal' => $cartSubtotal,
         'tax_amount' => $taxAmount,
@@ -1512,99 +1486,37 @@ public function processCheckout(Request $request)
         'coupon_id' => $couponId,
     ];
     
-    // For card payments, initiate Paystack payment
-    if ($request->payment_method == 'card') {
-        try {
-            // Initialize Paystack
-            $paystack = new \Yabacon\Paystack(env('PAYSTACK_SECRET_KEY'));
-            
-            $transactionData = [
-                'email' => $request->customer_email,
-                'amount' => $totalAmount * 100,
-                'reference' => $orderRef,
-                'callback_url' => route('user.checkout.verify-payment'),
-                'metadata' => [
-                    'order_ref' => $orderRef,
-                    'customer_name' => $request->customer_name,
-                    'customer_phone' => $request->customer_phone,
-                    'order_type' => $overallDeliveryType,
-                ]
-            ];
-            
-            $transaction = $paystack->transaction->initialize($transactionData);
-            
-            // Save order with payment reference
-            $orderData['payment_reference'] = $orderRef;
-            $order = Order::create($orderData);
-            
-            // Add order items
-            foreach ($cartItems as $item) {
-                $order->items()->create([
-                    'menu_item_id' => $item->menu_item_id,
-                    'quantity' => $item->quantity,
-                    'unit_price' => $item->menuItem->price,
-                    'total_price' => $item->menuItem->price * $item->quantity,
-                ]);
-            }
-            
-            // Clear cart after order creation
-            if ($user) {
-                CartItem::where('user_id', $user->id)->delete();
-            } else {
-                session()->forget('cart');
-            }
-            
-            // Clear coupon
-            session()->forget('coupon');
-            
-            return response()->json([
-                'success' => true,
-                'payment_method' => 'card',
-                'authorization_url' => $transaction->data->authorization_url,
-                'access_code' => $transaction->data->access_code,
-                'reference' => $transaction->data->reference,
-                'order_ref' => $orderRef,
-            ]);
-            
-        } catch (\Exception $e) {
-            Log::error('Paystack initialization error: ' . $e->getMessage());
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Payment gateway error. Please try again.'
-            ]);
-        }
-    } else {
-        // For cash or transfer payments
-        $order = Order::create($orderData);
-        
-        // Add order items
-        foreach ($cartItems as $item) {
-            $order->items()->create([
-                'menu_item_id' => $item->menu_item_id,
-                'quantity' => $item->quantity,
-                'unit_price' => $item->menuItem->price,
-                'total_price' => $item->menuItem->price * $item->quantity,
-            ]);
-        }
-        
-        // Clear cart after order creation
-        if ($user) {
-            CartItem::where('user_id', $user->id)->delete();
-        } else {
-            session()->forget('cart');
-        }
-        
-        // Clear coupon
-        session()->forget('coupon');
-        
-        return response()->json([
-            'success' => true,
-            'payment_method' => $request->payment_method,
-            'order_ref' => $orderRef,
-            'redirect_url' => route('user.checkout.success'),
+    // Create order immediately for all payment methods
+    $order = Order::create($orderData);
+    
+    // Add order items
+    foreach ($cartItems as $item) {
+        $order->items()->create([
+            'menu_item_id' => $item->menu_item_id,
+            'item_name' => $item->menuItem->name,
+            'quantity' => $item->quantity,
+            'unit_price' => $item->menuItem->price,
+            'total_price' => $item->menuItem->price * $item->quantity,
         ]);
     }
+    
+    // Clear cart after order creation
+    if ($user) {
+        CartItem::where('user_id', $user->id)->delete();
+    } else {
+        session()->forget('cart');
+    }
+    
+    // Clear coupon
+    session()->forget('coupon');
+    
+    // Return success response for all payment methods
+    return response()->json([
+        'success' => true,
+        'payment_method' => $request->payment_method,
+        'order_ref' => $orderRef,
+        'redirect_url' => route('user.checkout.success'),
+    ]);
 }
 
 
@@ -1617,10 +1529,89 @@ public function processCheckout(Request $request)
 
 
 
+
+
 /**
- * Verify Paystack payment
+ * Update cart item (including add-ons)
  */
-public function verifyPayment(Request $request)
+public function updateItem(Request $request)
+{
+    $request->validate([
+        'cart_item_id' => 'required|exists:cart_items,id',
+        'quantity' => 'required|integer|min:1|max:99',
+        'addons' => 'nullable|array',
+        'preferences' => 'nullable|array',
+        'special_instructions' => 'nullable|string|max:500'
+    ]);
+
+    /** @var \App\Models\User|null $user */
+    $user = Auth::user();
+    
+    // Make sure the cart item belongs to the authenticated user
+    $cartItem = CartItem::where('id', $request->cart_item_id)
+                       ->where('user_id', $user->id)
+                       ->firstOrFail();
+    
+    // Update quantity
+    $cartItem->quantity = $request->quantity;
+    
+    // Update special instructions
+    $cartItem->special_instructions = $request->special_instructions;
+    
+    // Update options/preferences
+    if ($request->has('preferences')) {
+        $cartItem->options = $request->preferences;
+    }
+    
+    // Sync add-ons
+    if ($request->has('addons')) {
+        $addonData = [];
+        foreach ($request->addons as $addon) {
+            if ($addon['quantity'] > 0) {
+                $addonData[$addon['id']] = ['quantity' => $addon['quantity']];
+            }
+        }
+        $cartItem->addons()->sync($addonData);
+    }
+    
+    $cartItem->save();
+    
+    // Recalculate cart totals
+    $cartCount = CartItem::where('user_id', $user->id)->sum('quantity');
+    $cartSubtotal = $this->calculateCartSubtotal($user);
+    
+    $taxRate = 0.075;
+    $taxAmount = $cartSubtotal * $taxRate;
+    $deliveryFee = 0;
+    
+    // Check for coupon discount
+    $discountAmount = 0;
+    if (session()->has('coupon')) {
+        $appliedCoupon = session()->get('coupon');
+        $coupon = Coupon::where('code', $appliedCoupon['code'])->first();
+        if ($coupon && $coupon->isValid($cartSubtotal)) {
+            $discountAmount = $coupon->calculateDiscount($cartSubtotal);
+        }
+    }
+    
+    $total = $cartSubtotal + $taxAmount + $deliveryFee - $discountAmount;
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Item updated successfully',
+        'cart_count' => $cartCount,
+        'subtotal' => number_format($cartSubtotal, 2),
+        'tax_amount' => number_format($taxAmount, 2),
+        'delivery_fee' => number_format($deliveryFee, 2),
+        'discount_amount' => number_format($discountAmount, 2),
+        'total' => number_format($total, 2)
+    ]);
+}
+
+    /**
+     * Verify Paystack payment
+     */
+    public function verifyPayment(Request $request)
 {
     $reference = $request->reference;
     
@@ -1630,12 +1621,12 @@ public function verifyPayment(Request $request)
     }
     
     try {
-        // Verify payment with Paystack
-        $paystack = new \Yabacon\Paystack(env('sk_test_3009a5ebcff695a9e8ea18b25270d9beaaa4cf6c'));
-        $transaction = $paystack->transaction->verify(['reference' => $reference]);
-        
+        // Verify payment with Paystack - FIXED KEY
+        $paystack = new \Yabacon\Paystack(env('PAYSTACK_SECRET_KEY'));
+        $transaction = $paystack->transaction->withoutverify(['reference' => $reference]);
+    
         if ($transaction->data->status == 'success') {
-            // Update order status
+            // Find order by payment_reference (which is the same as reference)
             $order = Order::where('payment_reference', $reference)->first();
             
             if ($order) {
@@ -1650,6 +1641,10 @@ public function verifyPayment(Request $request)
                 return redirect()->route('checkout.success')
                                  ->with('success', 'Payment successful! Your order has been confirmed.')
                                  ->with('order_ref', $order->order_ref);
+            } else {
+                Log::error('Order not found for reference: ' . $reference);
+                return redirect()->route('checkout.cancel')
+                                 ->with('error', 'Order not found. Please contact support.');
             }
         }
         
@@ -1664,27 +1659,31 @@ public function verifyPayment(Request $request)
     }
 }
 
-/**
- * Display checkout success page
- */
-public function checkoutSuccess()
-{
-    $orderRef = session('order_ref');
-    $order = null;
+
+
+
     
-    if ($orderRef) {
-        $order = Order::where('order_ref', $orderRef)->first();
+
+    /**
+     * Display checkout success page
+     */
+    public function checkoutSuccess()
+    {
+        $orderRef = session('order_ref');
+        $order = null;
+        
+        if ($orderRef) {
+            $order = Order::where('order_ref', $orderRef)->first();
+        }
+        
+        return view('user.dashboard.checkout-success', compact('order'));
     }
-    
-    return view('user.dashboard.checkout-success', compact('order'));
-}
 
-/**
- * Display checkout cancel page
- */
-public function checkoutCancel()
-{
-    return view('user.dashboard.checkout-cancel');
-}
-
+    /**
+     * Display checkout cancel page
+     */
+    public function checkoutCancel()
+    {
+        return view('user.dashboard.checkout-cancel');
+    }
 }

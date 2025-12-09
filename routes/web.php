@@ -54,7 +54,6 @@ Route::delete('/wishlist/clear', [UserDashboardController::class, 'clearWishlist
 
 
 
-
 // Checkout Routes (public - allow guests and authenticated users)
 Route::get('/checkout', [UserDashboardController::class, 'checkout'])->name('checkout');
 Route::post('/checkout/process', [UserDashboardController::class, 'processCheckout'])->name('checkout.process');
@@ -72,6 +71,8 @@ Route::post('/cart/clear', [UserDashboardController::class, 'clearCart'])->name(
 Route::post('/cart/apply-coupon', [UserDashboardController::class, 'applyCoupon'])->name('cart.apply-coupon');
 Route::post('/cart/remove-coupon', [UserDashboardController::class, 'removeCoupon'])->name('cart.remove-coupon');
 Route::post('/cart/sync', [UserDashboardController::class, 'syncGuestCart'])->name('cart.sync');
+
+Route::post('/my-account/cart/update-item', [UserDashboardController::class, 'updateItem'])->name('user.cart.update-item');
 
     // Reviews
     Route::get('/reviews', [UserDashboardController::class, 'reviews'])->name('reviews');

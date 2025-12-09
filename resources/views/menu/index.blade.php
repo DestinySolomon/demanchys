@@ -148,34 +148,7 @@
         max-width: 520px;
     }
 
-    .delivery-type {
-        margin: 15px 0;
-    }
-
-    .delivery-type label {
-        display: block;
-        margin-bottom: 8px;
-        color: #ffc107;
-        font-weight: 600;
-    }
-
-    .delivery-type select {
-        width: 100%;
-        padding: 8px 12px;
-        border-radius: 6px;
-        background: #2d2d2d;
-        color: white;
-        border: 1px solid #444;
-    }
-
-    .delivery-type select:required:invalid {
-        color: #6c757d;
-    }
-
-    .delivery-type select option {
-        color: white;
-        background: #2d2d2d;
-    }
+    /* REMOVED: Delivery type CSS styles */
 
     /* Make custom small modal */
     .modal-sm-custom .modal-content {
@@ -315,6 +288,54 @@
             max-width: 92%;
         }
     }
+
+    /* Toast notification styles */
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: slideIn 0.3s ease;
+    }
+
+    .toast-notification.error {
+        background: #dc3545;
+    }
+
+    .toast-notification.warning {
+        background: #ffc107;
+        color: #000;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
 </style>
 
 <div class="container py-1 pt-0">
@@ -353,11 +374,13 @@
                             <div class="menu-item-price">₦{{ number_format($item->price) }}</div>
 
                             <div class="d-flex gap-2 mt-3">
-                                <!-- Customize Button -->
-                                <button class="btn btn-outline-custom w-100 customize-btn"
+                                <!-- Add to Cart Button (Updated) -->
+                                <button class="btn btn-outline-custom w-100 add-to-cart-btn"
                                         data-id="{{ $item->id }}"
-                                        data-category="{{ strtolower($category->name) }}">
-                                    Customize & Order
+                                        data-name="{{ $item->name }}"
+                                        data-price="{{ $item->price }}"
+                                        data-image="{{ $item->image_url ?? asset('assets/placeholder_food.jpg') }}">
+                                    Add to Cart
                                 </button>
                             </div>
                         </div>
@@ -376,201 +399,11 @@
      C O M M O N   M O D A L S
      ============================ -->
 
-<!-- Cuisine Modal -->
-<div class="modal fade" id="modalCuisine" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm-custom">
-        <div class="modal-content p-3">
-            <div class="modal-header border-0">
-                <h5 class="modal-title" id="cuisineItemName">Customize</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="cuisineItemImage" class="mb-2 text-center"></div>
-                <div class="mb-2">
-                    <div class="menu-item-price" id="cuisineItemPrice"></div>
-                    <div class="small-muted" id="cuisineItemDesc"></div>
-                </div>
-
-                <hr>
-                <h6 class="text-warning">Add-ons</h6>
-                <div id="cuisineAddonsList" class="mb-3"><!-- dynamic addons with +/- --></div>
-
-                <h6 class="text-warning">Cuisine Preferences</h6>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="cuisinePrefNoOnion">
-                    <label class="form-check-label" for="cuisinePrefNoOnion">No onion</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="cuisinePrefNoCrayfish">
-                    <label class="form-check-label" for="cuisinePrefNoCrayfish">No crayfish</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="cuisinePrefExtraSpicy">
-                    <label class="form-check-label" for="cuisinePrefExtraSpicy">Extra spicy</label>
-                </div>
-
-                <div class="delivery-type">
-                    <label for="cuisineDeliveryType">Delivery Type *</label>
-                    <select id="cuisineDeliveryType" required>
-                        <option value="" selected disabled>Choose delivery type</option>
-                        <option value="Eat In">Eat In</option>
-                        <option value="Takeaway">Takeaway</option>
-                        <option value="Home Delivery">Home Delivery</option>
-                    </select>
-                </div>
-
-                <hr>
-                <div class="d-flex justify-content-between align-items-center mt-2">
-                    <div class="qty-controls">
-                        <button class="btn btn-sm btn-outline-light" id="cuisineQtyMinus">-</button>
-                        <input type="text" id="cuisineQtyInput" value="1" style="width:48px; text-align:center; background:transparent; color:white; border:none;">
-                        <button class="btn btn-sm btn-outline-light" id="cuisineQtyPlus">+</button>
-                    </div>
-
-                    <div>
-                        <div class="small text-white">Total</div>
-                        <div class="fw-bold" id="cuisineTotalPrice">₦0</div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-custom modal-complete-btn">Complete Order</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Drinks Modal -->
-<div class="modal fade" id="modalDrinks" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm-custom">
-        <div class="modal-content p-3">
-            <div class="modal-header border-0">
-                <h5 class="modal-title" id="drinksItemName">Order Drink</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="drinksItemImage" class="mb-2 text-center"></div>
-                <div class="mb-2">
-                    <div class="menu-item-price" id="drinksItemPrice"></div>
-                    <div class="small-muted" id="drinksItemDesc"></div>
-                </div>
-
-                <h6 class="text-warning">Drink Preferences</h6>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="drinksPrefLessIce">
-                    <label class="form-check-label" for="drinksPrefLessIce">Less ice</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="drinksPrefNoIce">
-                    <label class="form-check-label" for="drinksPrefNoIce">No ice</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="drinksPrefExtraLemon">
-                    <label class="form-check-label" for="drinksPrefExtraLemon">Extra lemon</label>
-                </div>
-
-                <div class="delivery-type">
-                    <label for="drinksDeliveryType">Delivery Type *</label>
-                    <select id="drinksDeliveryType" required>
-                        <option value="" selected disabled>Choose delivery type</option>
-                        <option value="Drink In">Drink In</option>
-                        <option value="Takeaway">Takeaway</option>
-                        <option value="Home Delivery">Home Delivery</option>
-                    </select>
-                </div>
-
-                <hr>
-                <div class="small-muted mb-3">Select quantity</div>
-
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="qty-controls">
-                        <button class="btn btn-sm btn-outline-light" id="drinksQtyMinus">-</button>
-                        <input type="text" id="drinksQtyInput" value="1" style="width:48px; text-align:center; background:transparent; color:white; border:none;">
-                        <button class="btn btn-sm btn-outline-light" id="drinksQtyPlus">+</button>
-                    </div>
-
-                    <div>
-                        <div class="small text-white">Total</div>
-                        <div class="fw-bold" id="drinksTotalPrice">₦0</div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-custom modal-complete-btn">Complete Order</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Grill Modal -->
-<div class="modal fade" id="modalGrill" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm-custom">
-        <div class="modal-content p-3">
-            <div class="modal-header border-0">
-                <h5 class="modal-title" id="grillItemName">Customize Grill</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="grillItemImage" class="mb-2 text-center"></div>
-                <div class="mb-2">
-                    <div class="menu-item-price" id="grillItemPrice"></div>
-                    <div class="small-muted" id="grillItemDesc"></div>
-                </div>
-
-                <hr>
-                <h6 class="text-warning">Add-ons (e.g. extra skewers)</h6>
-                <div id="grillAddonsList" class="mb-3"></div>
-
-                <h6 class="text-warning">Grill Preferences</h6>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="grillPrefNoOnion">
-                    <label class="form-check-label" for="grillPrefNoOnion">No onion</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="grillPrefNoVeg">
-                    <label class="form-check-label" for="grillPrefNoVeg">No vegetables</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="grillPrefWellDone">
-                    <label class="form-check-label" for="grillPrefWellDone">Well done</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="grillPrefExtraSauce">
-                    <label class="form-check-label" for="grillPrefExtraSauce">Extra sauce</label>
-                </div>
-
-                <div class="delivery-type">
-                    <label for="grillDeliveryType">Delivery Type *</label>
-                    <select id="grillDeliveryType" required>
-                        <option value="" selected disabled>Choose delivery type</option>
-                        <option value="Eat In">Eat In</option>
-                        <option value="Takeaway">Takeaway</option>
-                        <option value="Home Delivery">Home Delivery</option>
-                    </select>
-                </div>
-
-                <hr>
-                <div class="d-flex justify-content-between align-items-center mt-2">
-                    <div class="qty-controls">
-                        <button class="btn btn-sm btn-outline-light" id="grillQtyMinus">-</button>
-                        <input type="text" id="grillQtyInput" value="1" style="width:48px; text-align:center; background:transparent; color:white; border:none;">
-                        <button class="btn btn-sm btn-outline-light" id="grillQtyPlus">+</button>
-                    </div>
-
-                    <div>
-                        <div class="small text-white">Total</div>
-                        <div class="fw-bold" id="grillTotalPrice">₦0</div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-custom modal-complete-btn">Complete Order</button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- REMOVED: All customization modals (Cuisine, Drinks, Grill) -->
+<!-- These will be moved to the cart page instead -->
 
 @push('scripts')
+<script>
 // Wait for jQuery to be ready
 $(document).ready(function() {
     console.log('jQuery loaded and ready');
@@ -663,496 +496,79 @@ $(document).ready(function() {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-    // helper: format price
-    function formatPrice(n) {
-        return '₦' + new Intl.NumberFormat().format(n);
-    }
-
-    // parse a displayed price like "₦3,500" -> number 3500
-    function parsePrice(display) {
-        if (!display) return 0;
-        return Number(String(display).replace(/[^0-9.]/g, '') || 0);
-    }
-
-    // ============================================
-    // ADDED: Delivery Type Mapping Function
-    // ============================================
-    function mapDeliveryType(displayType) {
-        const mapping = {
-            'Eat In': 'eat_in',
-            'Takeaway': 'takeaway',
-            'Home Delivery': 'home_delivery',
-            'Drink In': 'eat_in' // Drink In maps to eat_in
-        };
-        return mapping[displayType] || 'eat_in';
-    }
-
-    // universal fetch endpoint for item data
-    async function fetchItem(id) {
-        const res = await fetch(`/menu/item/${id}`);
-        if (!res.ok) throw new Error('Item not found');
-        return await res.json();
-    }
-
-    // universal rendering helpers
-    function createAddonRow(addon, prefix) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'addon-row d-flex justify-content-between align-items-center';
-        wrapper.innerHTML = `
-            <div>
-                <div class="fw-semibold addon-name">${addon.name}</div>
-                <div class="small-muted">+ ${formatPrice(addon.price)}</div>
-            </div>
-            <div class="addon-controls d-flex align-items-center">
-                <button type="button" class="btn btn-sm btn-outline-light addon-minus me-2" data-id="${addon.id}" data-price="${addon.price}">-</button>
-                <input type="text" value="0" class="addon-qty form-control form-control-sm text-center" data-id="${addon.id}" data-price="${addon.price}" style="width:56px;">
-                <button type="button" class="btn btn-sm btn-outline-light addon-plus ms-2" data-id="${addon.id}" data-price="${addon.price}">+</button>
-            </div>
+    // Helper function to show toast notifications
+    function showToast(message, type = 'success', duration = 3000) {
+        // Remove existing toast
+        const existingToast = document.querySelector('.toast-notification');
+        if (existingToast) {
+            existingToast.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => existingToast.remove(), 300);
+        }
+        
+        // Create new toast
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${type}`;
+        toast.innerHTML = `
+            <i class="bi ${type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-exclamation-circle' : 'bi-info-circle'}"></i>
+            <span>${message}</span>
         `;
-        return wrapper;
+        
+        document.body.appendChild(toast);
+        
+        // Auto remove after duration
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
     }
 
-    // attach behavior to cards (customize)
-    document.querySelectorAll('.customize-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const id = btn.dataset.id;
-            const category = (btn.dataset.category || '').toLowerCase();
-
-            try {
-                const item = await fetchItem(id);
-
-                // determine modal type by category name heuristics
-                if (category.includes('drink') || category.includes('cocktail') || category.includes('wine')) {
-                    populateDrinksModal(item);
-                    new bootstrap.Modal(document.getElementById('modalDrinks')).show();
-                } else if (category.includes('grill') || category.includes('grilled')) {
-                    populateGrillModal(item);
-                    new bootstrap.Modal(document.getElementById('modalGrill')).show();
-                } else {
-                    // default to cuisine modal
-                    populateCuisineModal(item);
-                    new bootstrap.Modal(document.getElementById('modalCuisine')).show();
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Could not load item details. Refresh and try again.');
-            }
-        });
-    });
-
-    // ---------------------------
-    // Populate each modal type
-    // ---------------------------
-
-    // Cuisine modal
-    function populateCuisineModal(item) {
-        // set base fields
-        const nameEl = document.getElementById('cuisineItemName');
-        const priceEl = document.getElementById('cuisineItemPrice');
-        const descEl = document.getElementById('cuisineItemDesc');
-        const imgEl = document.getElementById('cuisineItemImage');
-
-        if (nameEl) nameEl.textContent = item.name;
-        if (priceEl) priceEl.textContent = formatPrice(item.price);
-        if (descEl) descEl.textContent = item.description || '';
-        if (imgEl) imgEl.innerHTML = item.image ? `<img src="/storage/${item.image}" style="max-width:120px;border-radius:8px;" />` : '';
-
-        // reset quantities and prefs
-        const qtyInput = document.getElementById('cuisineQtyInput');
-        if (qtyInput) qtyInput.value = 1;
-        if (document.getElementById('cuisinePrefNoOnion')) document.getElementById('cuisinePrefNoOnion').checked = false;
-        if (document.getElementById('cuisinePrefNoCrayfish')) document.getElementById('cuisinePrefNoCrayfish').checked = false;
-        if (document.getElementById('cuisinePrefExtraSpicy')) document.getElementById('cuisinePrefExtraSpicy').checked = false;
-        if (document.getElementById('cuisineDeliveryType')) document.getElementById('cuisineDeliveryType').value = '';
-
-        // render addons (plus/minus)
-        const list = document.getElementById('cuisineAddonsList');
-        if (list) {
-            list.innerHTML = '';
-            const addons = item.addons || [];
-            if (addons.length === 0) {
-                list.innerHTML = '<div class="small-muted">No add-ons available</div>';
+    // Helper function to update cart count in navbar
+    function updateCartCount(count) {
+        // Find cart badge in navbar
+        const cartBadge = document.querySelector('.cart-badge, .badge.bg-warning, [href*="cart"] .badge');
+        if (cartBadge) {
+            if (count > 0) {
+                cartBadge.textContent = count;
+                cartBadge.style.display = 'inline-block';
             } else {
-                addons.forEach(a => list.appendChild(createAddonRow(a, 'cuisine')));
+                cartBadge.style.display = 'none';
             }
-            // attach addon plus/minus logic for cuisine
-            attachAddonControls(list);
         }
-
-        // set stored object
-        window._cuisine = {
-            id: item.id,
-            name: item.name,
-            category: item.category || 'cuisine',
-            base_price: Number(item.price || 0)
-        };
-        recalcCuisineTotal();
-    }
-
-    function attachAddonControls(listEl) {
-        // plus
-        listEl.querySelectorAll('.addon-plus').forEach(btn => {
-            btn.onclick = () => {
-                const input = btn.parentElement.querySelector('.addon-qty');
-                input.value = Math.max(0, Number(input.value || 0) + 1);
-                recalcAllTotals();
-            };
-        });
         
-        // minus
-        listEl.querySelectorAll('.addon-minus').forEach(btn => {
-            btn.onclick = () => {
-                const input = btn.parentElement.querySelector('.addon-qty');
-                input.value = Math.max(0, Number(input.value || 0) - 1);
-                recalcAllTotals();
-            };
-        });
-        
-        // direct input change
-        listEl.querySelectorAll('.addon-qty').forEach(inp => {
-            inp.addEventListener('input', () => {
-                inp.value = Math.max(0, Number(inp.value || 0));
-                recalcAllTotals();
-            });
+        // Also update any other cart count indicators
+        const cartCounts = document.querySelectorAll('.cart-count');
+        cartCounts.forEach(el => {
+            el.textContent = count;
         });
     }
 
-    // Drinks modal
-    function populateDrinksModal(item) {
-        const nameEl = document.getElementById('drinksItemName');
-        const priceEl = document.getElementById('drinksItemPrice');
-        const descEl = document.getElementById('drinksItemDesc');
-        const imgEl = document.getElementById('drinksItemImage');
-
-        if (nameEl) nameEl.textContent = item.name;
-        if (priceEl) priceEl.textContent = formatPrice(item.price);
-        if (descEl) descEl.textContent = item.description || '';
-        if (imgEl) imgEl.innerHTML = item.image ? `<img src="/storage/${item.image}" style="max-width:120px;border-radius:8px;" />` : '';
-
-        const qtyInput = document.getElementById('drinksQtyInput');
-        if (qtyInput) qtyInput.value = 1;
-        
-        // Reset drink preferences
-        if (document.getElementById('drinksPrefLessIce')) document.getElementById('drinksPrefLessIce').checked = false;
-        if (document.getElementById('drinksPrefNoIce')) document.getElementById('drinksPrefNoIce').checked = false;
-        if (document.getElementById('drinksPrefExtraLemon')) document.getElementById('drinksPrefExtraLemon').checked = false;
-        if (document.getElementById('drinksDeliveryType')) document.getElementById('drinksDeliveryType').value = '';
-
-        window._drinks = {
-            id: item.id,
-            name: item.name,
-            category: item.category || 'drinks',
-            base_price: Number(item.price || 0)
-        };
-        recalcDrinksTotal();
-    }
-
-    // Grill modal
-    function populateGrillModal(item) {
-        const nameEl = document.getElementById('grillItemName');
-        const priceEl = document.getElementById('grillItemPrice');
-        const descEl = document.getElementById('grillItemDesc');
-        const imgEl = document.getElementById('grillItemImage');
-
-        if (nameEl) nameEl.textContent = item.name;
-        if (priceEl) priceEl.textContent = formatPrice(item.price);
-        if (descEl) descEl.textContent = item.description || '';
-        if (imgEl) imgEl.innerHTML = item.image ? `<img src="/storage/${item.image}" style="max-width:120px;border-radius:8px;" />` : '';
-
-        const qtyInput = document.getElementById('grillQtyInput');
-        if (qtyInput) qtyInput.value = 1;
-        
-        // Reset grill preferences
-        if (document.getElementById('grillPrefNoOnion')) document.getElementById('grillPrefNoOnion').checked = false;
-        if (document.getElementById('grillPrefNoVeg')) document.getElementById('grillPrefNoVeg').checked = false;
-        if (document.getElementById('grillPrefWellDone')) document.getElementById('grillPrefWellDone').checked = false;
-        if (document.getElementById('grillPrefExtraSauce')) document.getElementById('grillPrefExtraSauce').checked = false;
-        if (document.getElementById('grillDeliveryType')) document.getElementById('grillDeliveryType').value = '';
-
-        const list = document.getElementById('grillAddonsList');
-        if (list) {
-            list.innerHTML = '';
-            const addons = item.addons || [];
-            if (addons.length === 0) {
-                list.innerHTML = '<div class="small-muted">No add-ons available</div>';
-            } else {
-                addons.forEach(a => list.appendChild(createAddonRow(a, 'grill')));
-            }
-            attachAddonControls(list);
-        }
-
-        window._grill = {
-            id: item.id,
-            name: item.name,
-            category: item.category || 'grill',
-            base_price: Number(item.price || 0)
-        };
-        recalcGrillTotal();
-    }
-
-    // ---------------------------
-    // Quantity controls and recalc
-    // ---------------------------
-
-    // cuisine qty buttons
-    if (document.getElementById('cuisineQtyPlus')) {
-        document.getElementById('cuisineQtyPlus').addEventListener('click', () => {
-            const el = document.getElementById('cuisineQtyInput');
-            el.value = Math.max(1, Number(el.value) + 1);
-            recalcCuisineTotal();
-        });
-    }
-    
-    if (document.getElementById('cuisineQtyMinus')) {
-        document.getElementById('cuisineQtyMinus').addEventListener('click', () => {
-            const el = document.getElementById('cuisineQtyInput');
-            el.value = Math.max(1, Number(el.value) - 1);
-            recalcCuisineTotal();
-        });
-    }
-    
-    if (document.getElementById('cuisineQtyInput')) {
-        document.getElementById('cuisineQtyInput').addEventListener('input', () => {
-            document.getElementById('cuisineQtyInput').value = Math.max(1, Number(document.getElementById('cuisineQtyInput').value || 1));
-            recalcCuisineTotal();
-        });
-    }
-
-    function recalcCuisineTotal() {
-        const cur = window._cuisine;
-        if (!cur) return;
-        const qty = Number(document.getElementById('cuisineQtyInput').value || 1);
-        let addonsTotal = 0;
-        document.querySelectorAll('#cuisineAddonsList .addon-qty').forEach(i => {
-            addonsTotal += Number(i.value || 0) * Number(i.dataset.price || 0);
-        });
-        const total = (cur.base_price + addonsTotal) * qty;
-        if (document.getElementById('cuisineTotalPrice')) {
-            document.getElementById('cuisineTotalPrice').textContent = formatPrice(total);
-        }
-    }
-
-    // drinks qty
-    if (document.getElementById('drinksQtyPlus')) {
-        document.getElementById('drinksQtyPlus').addEventListener('click', () => {
-            const el = document.getElementById('drinksQtyInput');
-            el.value = Math.max(1, Number(el.value) + 1);
-            recalcDrinksTotal();
-        });
-    }
-    
-    if (document.getElementById('drinksQtyMinus')) {
-        document.getElementById('drinksQtyMinus').addEventListener('click', () => {
-            const el = document.getElementById('drinksQtyInput');
-            el.value = Math.max(1, Number(el.value) - 1);
-            recalcDrinksTotal();
-        });
-    }
-    
-    if (document.getElementById('drinksQtyInput')) {
-        document.getElementById('drinksQtyInput').addEventListener('input', () => {
-            document.getElementById('drinksQtyInput').value = Math.max(1, Number(document.getElementById('drinksQtyInput').value || 1));
-            recalcDrinksTotal();
-        });
-    }
-
-    function recalcDrinksTotal() {
-        const cur = window._drinks;
-        if (!cur) return;
-        const qty = Number(document.getElementById('drinksQtyInput').value || 1);
-        const total = cur.base_price * qty;
-        if (document.getElementById('drinksTotalPrice')) {
-            document.getElementById('drinksTotalPrice').textContent = formatPrice(total);
-        }
-    }
-
-    // grill qty
-    if (document.getElementById('grillQtyPlus')) {
-        document.getElementById('grillQtyPlus').addEventListener('click', () => {
-            const el = document.getElementById('grillQtyInput');
-            el.value = Math.max(1, Number(el.value) + 1);
-            recalcGrillTotal();
-        });
-    }
-    
-    if (document.getElementById('grillQtyMinus')) {
-        document.getElementById('grillQtyMinus').addEventListener('click', () => {
-            const el = document.getElementById('grillQtyInput');
-            el.value = Math.max(1, Number(el.value) - 1);
-            recalcGrillTotal();
-        });
-    }
-    
-    if (document.getElementById('grillQtyInput')) {
-        document.getElementById('grillQtyInput').addEventListener('input', () => {
-            document.getElementById('grillQtyInput').value = Math.max(1, Number(document.getElementById('grillQtyInput').value || 1));
-            recalcGrillTotal();
-        });
-    }
-
-    function recalcGrillTotal() {
-        const cur = window._grill;
-        if (!cur) return;
-        const qty = Number(document.getElementById('grillQtyInput').value || 1);
-        let addonsTotal = 0;
-        document.querySelectorAll('#grillAddonsList .addon-qty').forEach(i => {
-            addonsTotal += Number(i.value || 0) * Number(i.dataset.price || 0);
-        });
-        const total = (cur.base_price + addonsTotal) * qty;
-        if (document.getElementById('grillTotalPrice')) {
-            document.getElementById('grillTotalPrice').textContent = formatPrice(total);
-        }
-    }
-
-    // Recalc helper used by addon controls
-    function recalcAllTotals() {
-        recalcCuisineTotal();
-        recalcGrillTotal();
-        recalcDrinksTotal();
-    }
-
-    // Listen to addon qty changes anywhere (delegated) - update totals
-    document.addEventListener('input', function(e) {
-        if (e.target && e.target.classList && e.target.classList.contains('addon-qty')) {
-            recalcAllTotals();
-        }
-    });
-
-    // ---------------------------
-    // Modal Complete buttons - UPDATED VERSION
-    // ---------------------------
-    
-    document.querySelectorAll('.modal-complete-btn').forEach(b => {
-        b.addEventListener('click', () => {
-            const visible = document.querySelector('.modal.show');
-            if (!visible) return alert('No modal active');
-
-            // Validate delivery type
-            let deliveryType = '';
-            if (visible.id === 'modalDrinks') {
-                deliveryType = document.getElementById('drinksDeliveryType').value;
-            } else if (visible.id === 'modalGrill') {
-                deliveryType = document.getElementById('grillDeliveryType').value;
-            } else {
-                deliveryType = document.getElementById('cuisineDeliveryType').value;
-            }
-
-            if (!deliveryType) {
-                alert('Please select a delivery type');
-                return;
-            }
-
-            // ============================================
-            // UPDATED: Build order payload with mapped delivery type
-            // ============================================
-            let payload = {
-                menu_item_id: null,
+    // Add to Cart functionality
+    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const itemId = this.dataset.id;
+            const itemName = this.dataset.name;
+            const itemPrice = this.dataset.price;
+            
+            console.log('Adding to cart:', { itemId, itemName, itemPrice });
+            
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Adding...';
+            this.disabled = true;
+            
+            // Get CSRF token
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            
+            // Prepare payload - simple add to cart without customization
+            const payload = {
+                menu_item_id: itemId,
                 quantity: 1,
-                delivery_type: mapDeliveryType(deliveryType), // Use mapped delivery type
                 addons: [],
                 preferences: [],
                 special_instructions: ''
             };
-
-            if (visible.id === 'modalDrinks') {
-                payload.menu_item_id = window._drinks?.id;
-                payload.quantity = Number(document.getElementById('drinksQtyInput').value || 1);
-                
-                // Drink preferences
-                if (document.getElementById('drinksPrefLessIce')?.checked) 
-                    payload.preferences.push('Less ice');
-                if (document.getElementById('drinksPrefNoIce')?.checked) 
-                    payload.preferences.push('No ice');
-                if (document.getElementById('drinksPrefExtraLemon')?.checked) 
-                    payload.preferences.push('Extra lemon');
-
-            } else if (visible.id === 'modalGrill') {
-                payload.menu_item_id = window._grill?.id;
-                payload.quantity = Number(document.getElementById('grillQtyInput').value || 1);
-                
-                // Grill addons
-                document.querySelectorAll('#grillAddonsList .addon-qty').forEach(i => {
-                    const q = Number(i.value || 0);
-                    if (q > 0) {
-                        payload.addons.push({
-                            id: i.dataset.id,
-                            quantity: q,
-                            name: i.closest('.addon-row').querySelector('.addon-name').textContent.trim(),
-                            price: Number(i.dataset.price || 0)
-                        });
-                    }
-                });
-                
-                // Grill preferences
-                if (document.getElementById('grillPrefNoOnion')?.checked) 
-                    payload.preferences.push('No onion');
-                if (document.getElementById('grillPrefNoVeg')?.checked) 
-                    payload.preferences.push('No vegetables');
-                if (document.getElementById('grillPrefWellDone')?.checked) 
-                    payload.preferences.push('Well done');
-                if (document.getElementById('grillPrefExtraSauce')?.checked) 
-                    payload.preferences.push('Extra sauce');
-
-            } else {
-                // Cuisine
-                payload.menu_item_id = window._cuisine?.id;
-                payload.quantity = Number(document.getElementById('cuisineQtyInput').value || 1);
-                
-                // Cuisine addons
-                document.querySelectorAll('#cuisineAddonsList .addon-qty').forEach(i => {
-                    const q = Number(i.value || 0);
-                    if (q > 0) {
-                        payload.addons.push({
-                            id: i.dataset.id,
-                            quantity: q,
-                            name: i.closest('.addon-row').querySelector('.addon-name').textContent.trim(),
-                            price: Number(i.dataset.price || 0)
-                        });
-                    }
-                });
-                
-                // Cuisine preferences
-                if (document.getElementById('cuisinePrefNoOnion')?.checked) 
-                    payload.preferences.push('No onion');
-                if (document.getElementById('cuisinePrefNoCrayfish')?.checked) 
-                    payload.preferences.push('No crayfish');
-                if (document.getElementById('cuisinePrefExtraSpicy')?.checked) 
-                    payload.preferences.push('Extra spicy');
-            }
-
-            if (!payload.menu_item_id) {
-                alert('Item not found. Please try again.');
-                return;
-            }
-
-            // Build special instructions from preferences
-            payload.special_instructions = [
-                deliveryType, // Keep original display type for instructions
-                ...payload.preferences,
-                ...payload.addons.map(a => `${a.quantity}x ${a.name}`)
-            ].join(', ');
-
-            // Get CSRF token
-            const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-
-            // Show loading
-            b.disabled = true;
-            b.innerHTML = '<i class="bi bi-arrow-clockwise" style="animation: spin 1s linear infinite;"></i> Adding to cart...';
-
-            // Add spin animation
-            if (!document.getElementById('spin-animation')) {
-                const style = document.createElement('style');
-                style.id = 'spin-animation';
-                style.textContent = `
-                    @keyframes spin {
-                        from { transform: rotate(0deg); }
-                        to { transform: rotate(360deg); }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-
-            // Add to cart first using AJAX
+            
+            // Add to cart via AJAX
             fetch('/my-account/cart/add', {
                 method: 'POST',
                 headers: {
@@ -1164,203 +580,149 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(response => response.json())
             .then(data => {
+                console.log('Add to cart response:', data);
+                
                 if (data.success) {
-                    // Close modal
-                    const modal = bootstrap.Modal.getInstance(visible);
-                    if (modal) modal.hide();
+                    // Show success toast
+                    showToast(`Added ${itemName} to cart!`, 'success');
                     
-                    // Show success message
-                    if (typeof Swal !== 'undefined') {
-                        Swal.fire({
-                            title: 'Added to Cart!',
-                            text: 'Redirecting to checkout...',
-                            icon: 'success',
-                            timer: 1500,
-                            showConfirmButton: false
-                        }).then(() => {
-                            // Redirect to checkout
-                            window.location.href = '/my-account/checkout';
-                        });
-                    } else {
-                        alert('Added to cart!');
-                        window.location.href = '/my-account/checkout';
+                    // Update cart count
+                    if (data.cart_count !== undefined) {
+                        updateCartCount(data.cart_count);
                     }
+                    
+                    // Optional: Show "View Cart" button for a moment
+                    setTimeout(() => {
+                        // Restore button
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                        
+                        // Optional: Change button to "View Cart" temporarily
+                        this.innerHTML = '<i class="bi bi-cart-check"></i> View Cart';
+                        this.classList.remove('btn-outline-custom');
+                        this.classList.add('btn-custom');
+                        
+                        // Revert after 3 seconds
+                        setTimeout(() => {
+                            this.innerHTML = originalText;
+                            this.classList.remove('btn-custom');
+                            this.classList.add('btn-outline-custom');
+                        }, 3000);
+                    }, 1000);
                 } else {
-                    alert(data.message || 'Failed to add to cart');
-                    b.disabled = false;
-                    b.innerHTML = 'Complete Order';
+                    // Show error
+                    showToast(data.message || 'Failed to add to cart', 'error');
+                    this.innerHTML = originalText;
+                    this.disabled = false;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred. Please try again.');
-                b.disabled = false;
-                b.innerHTML = 'Complete Order';
+                showToast('An error occurred. Please try again.', 'error');
+                this.innerHTML = originalText;
+                this.disabled = false;
             });
         });
     });
 
-    // When modals hide, clear their addon inputs to avoid stale state
-    ['modalCuisine', 'modalDrinks', 'modalGrill'].forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.addEventListener('hidden.bs.modal', () => {
-            // reset stored objects & addon inputs
-            window._cuisine = null;
-            window._drinks = null;
-            window._grill = null;
-            // clear addon lists
-            if (document.getElementById('cuisineAddonsList')) document.getElementById('cuisineAddonsList').innerHTML = '';
-            if (document.getElementById('grillAddonsList')) document.getElementById('grillAddonsList').innerHTML = '';
-        });
-    });
-});
-
-// ============================================
-// W I S H L I S T   F U N C T I O N A L I T Y
-// ============================================
-
-// Wishlist functionality
-function addToWishlist(menuItemId) {
-    const btn = document.getElementById(`wishlist-btn-${menuItemId}`);
-    if (!btn) return;
-    
-    // Show loading state
-    const originalHTML = btn.innerHTML;
-    const originalClass = btn.className;
-    btn.innerHTML = '<i class="bi bi-heart-half"></i>';
-    btn.className = 'wishlist-btn btn btn-secondary';
-    btn.disabled = true;
-    
-    $.ajax({
-        url: '{{ route("user.wishlist.add") }}',
-        method: 'POST',
-        data: {
-            _token: '{{ csrf_token() }}',
-            menu_item_id: menuItemId
-        },
-        success: function(response) {
-            if (response.success) {
-                // Update button to show "in wishlist" state
-                btn.innerHTML = '<i class="bi bi-heart-fill"></i>';
-                btn.className = 'wishlist-btn btn btn-danger';
-                btn.setAttribute('onclick', `removeFromWishlistMenu(${menuItemId})`);
-                btn.setAttribute('title', 'Remove from Wishlist');
-                btn.disabled = false;
-                
-                // Show success message
-                Swal.fire({
-                    title: 'Added to Wishlist!',
-                    text: response.message,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-                
-                // Update wishlist count in sidebar
-                updateWishlistCount(response.wishlist_count);
-            } else {
-                // Already in wishlist
-                btn.innerHTML = '<i class="bi bi-heart-fill"></i>';
-                btn.className = 'wishlist-btn btn btn-danger';
-                btn.setAttribute('onclick', `removeFromWishlistMenu(${menuItemId})`);
-                btn.setAttribute('title', 'Remove from Wishlist');
-                btn.disabled = false;
-                
-                Swal.fire({
-                    title: 'Already in Wishlist',
-                    text: response.message,
-                    icon: 'info',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+    // Add spin animation for loading
+    if (!document.getElementById('spin-animation')) {
+        const style = document.createElement('style');
+        style.id = 'spin-animation';
+        style.textContent = `
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
             }
-        },
-        error: function(xhr) {
-            // Restore original state
-            btn.innerHTML = originalHTML;
-            btn.className = originalClass;
-            btn.disabled = false;
-            
-            if (xhr.status === 401) {
-                // Not authenticated
-                Swal.fire({
-                    title: 'Login Required',
-                    text: 'Please login to add items to your wishlist',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Login',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = '{{ route("login") }}';
-                    }
-                });
-            } else {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Something went wrong. Please try again.',
-                    icon: 'error',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+            .bi-arrow-clockwise.spin {
+                animation: spin 1s linear infinite;
+                display: inline-block;
             }
-        }
-    });
-}
+        `;
+        document.head.appendChild(style);
+    }
 
-// Remove from wishlist (for menu page)
-function removeFromWishlistMenu(menuItemId) {
-    const btn = document.getElementById(`wishlist-btn-${menuItemId}`);
-    if (!btn) return;
-    
-    Swal.fire({
-        title: 'Remove from Wishlist?',
-        text: 'Are you sure you want to remove this item from your wishlist?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, remove it',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#dc3545',
-        reverseButtons: true
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Show loading state
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="bi bi-heart-half"></i>';
-            btn.disabled = true;
-            
-            $.ajax({
-                url: '{{ route("user.wishlist.remove", "") }}/' + menuItemId,
-                method: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    _method: 'DELETE'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Update button appearance
-                        btn.innerHTML = '<i class="bi bi-heart"></i>';
-                        btn.className = 'wishlist-btn btn btn-outline-danger';
-                        btn.setAttribute('onclick', `addToWishlist(${menuItemId})`);
-                        btn.setAttribute('title', 'Add to Wishlist');
-                        btn.disabled = false;
-                        
-                        // Update wishlist count
-                        updateWishlistCount(response.wishlist_count);
-                        
-                        Swal.fire({
-                            title: 'Removed!',
-                            text: response.message,
-                            icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                    }
-                },
-                error: function() {
-                    btn.innerHTML = originalHTML;
+    // ============================================
+    // W I S H L I S T   F U N C T I O N A L I T Y
+    // ============================================
+
+    // Wishlist functionality (kept as is)
+    function addToWishlist(menuItemId) {
+        const btn = document.getElementById(`wishlist-btn-${menuItemId}`);
+        if (!btn) return;
+        
+        // Show loading state
+        const originalHTML = btn.innerHTML;
+        const originalClass = btn.className;
+        btn.innerHTML = '<i class="bi bi-heart-half"></i>';
+        btn.className = 'wishlist-btn btn btn-secondary';
+        btn.disabled = true;
+        
+        $.ajax({
+            url: '{{ route("user.wishlist.add") }}',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                menu_item_id: menuItemId
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Update button to show "in wishlist" state
+                    btn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+                    btn.className = 'wishlist-btn btn btn-danger';
+                    btn.setAttribute('onclick', `removeFromWishlistMenu(${menuItemId})`);
+                    btn.setAttribute('title', 'Remove from Wishlist');
                     btn.disabled = false;
+                    
+                    // Show success message
+                    Swal.fire({
+                        title: 'Added to Wishlist!',
+                        text: response.message,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    // Update wishlist count in sidebar
+                    updateWishlistCount(response.wishlist_count);
+                } else {
+                    // Already in wishlist
+                    btn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+                    btn.className = 'wishlist-btn btn btn-danger';
+                    btn.setAttribute('onclick', `removeFromWishlistMenu(${menuItemId})`);
+                    btn.setAttribute('title', 'Remove from Wishlist');
+                    btn.disabled = false;
+                    
+                    Swal.fire({
+                        title: 'Already in Wishlist',
+                        text: response.message,
+                        icon: 'info',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            },
+            error: function(xhr) {
+                // Restore original state
+                btn.innerHTML = originalHTML;
+                btn.className = originalClass;
+                btn.disabled = false;
+                
+                if (xhr.status === 401) {
+                    // Not authenticated
+                    Swal.fire({
+                        title: 'Login Required',
+                        text: 'Please login to add items to your wishlist',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Login',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '{{ route("login") }}';
+                        }
+                    });
+                } else {
                     Swal.fire({
                         title: 'Error!',
                         text: 'Something went wrong. Please try again.',
@@ -1369,54 +731,122 @@ function removeFromWishlistMenu(menuItemId) {
                         showConfirmButton: false
                     });
                 }
-            });
-        }
-    });
-}
-
-// Update wishlist count across navbar, mobile and sidebar
-function updateWishlistCount(count) {
-    // Find all links that point to wishlist (desktop/mobile/sidebar)
-    const wishlistLinks = document.querySelectorAll('a[href*="/wishlist"], a[href*="wishlist"]');
-
-    wishlistLinks.forEach(link => {
-        // Try navbar style badge (.badge-count) first
-        let badge = link.querySelector('.badge-count') || link.querySelector('.badge');
-
-        if (count > 0) {
-            if (badge) {
-                badge.textContent = count;
-                badge.style.display = badge.classList.contains('badge-count') ? 'flex' : 'inline-block';
-            } else {
-                const newBadge = document.createElement('span');
-                if (link.classList.contains('nav-icon-btn') || link.classList.contains('mobile-icon')) {
-                    newBadge.className = 'badge-count';
-                    newBadge.style.display = 'flex';
-                } else {
-                    newBadge.className = 'badge bg-warning ms-auto';
-                    newBadge.style.display = 'inline-block';
-                }
-                newBadge.textContent = count;
-                link.appendChild(newBadge);
             }
-        } else {
-            if (badge) badge.style.display = 'none';
-        }
+        });
+    }
+
+    // Remove from wishlist (for menu page)
+    function removeFromWishlistMenu(menuItemId) {
+        const btn = document.getElementById(`wishlist-btn-${menuItemId}`);
+        if (!btn) return;
+        
+        Swal.fire({
+            title: 'Remove from Wishlist?',
+            text: 'Are you sure you want to remove this item from your wishlist?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, remove it',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#dc3545',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading state
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-heart-half"></i>';
+                btn.disabled = true;
+                
+                $.ajax({
+                    url: '{{ route("user.wishlist.remove", "") }}/' + menuItemId,
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        _method: 'DELETE'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Update button appearance
+                            btn.innerHTML = '<i class="bi bi-heart"></i>';
+                            btn.className = 'wishlist-btn btn btn-outline-danger';
+                            btn.setAttribute('onclick', `addToWishlist(${menuItemId})`);
+                            btn.setAttribute('title', 'Add to Wishlist');
+                            btn.disabled = false;
+                            
+                            // Update wishlist count
+                            updateWishlistCount(response.wishlist_count);
+                            
+                            Swal.fire({
+                                title: 'Removed!',
+                                text: response.message,
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        }
+                    },
+                    error: function() {
+                        btn.innerHTML = originalHTML;
+                        btn.disabled = false;
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Something went wrong. Please try again.',
+                            icon: 'error',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    // Update wishlist count across navbar, mobile and sidebar
+    function updateWishlistCount(count) {
+        // Find all links that point to wishlist (desktop/mobile/sidebar)
+        const wishlistLinks = document.querySelectorAll('a[href*="/wishlist"], a[href*="wishlist"]');
+
+        wishlistLinks.forEach(link => {
+            // Try navbar style badge (.badge-count) first
+            let badge = link.querySelector('.badge-count') || link.querySelector('.badge');
+
+            if (count > 0) {
+                if (badge) {
+                    badge.textContent = count;
+                    badge.style.display = badge.classList.contains('badge-count') ? 'flex' : 'inline-block';
+                } else {
+                    const newBadge = document.createElement('span');
+                    if (link.classList.contains('nav-icon-btn') || link.classList.contains('mobile-icon')) {
+                        newBadge.className = 'badge-count';
+                        newBadge.style.display = 'flex';
+                    } else {
+                        newBadge.className = 'badge bg-warning ms-auto';
+                        newBadge.style.display = 'inline-block';
+                    }
+                    newBadge.textContent = count;
+                    link.appendChild(newBadge);
+                }
+            } else {
+                if (badge) badge.style.display = 'none';
+            }
+        });
+
+        // Update any textual counters
+        const textCounters = document.querySelectorAll('.wishlist-count');
+        textCounters.forEach(el => el.textContent = count);
+    }
+
+    // Check wishlist status on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        @auth
+        // Optional: Check which items are already in wishlist and update buttons
+        // This would require an additional API endpoint to get user's wishlist items
+        // For now, buttons will update when clicked
+        @endauth
     });
-
-    // Update any textual counters
-    const textCounters = document.querySelectorAll('.wishlist-count');
-    textCounters.forEach(el => el.textContent = count);
-}
-
-// Check wishlist status on page load
-document.addEventListener('DOMContentLoaded', function() {
-    @auth
-    // Optional: Check which items are already in wishlist and update buttons
-    // This would require an additional API endpoint to get user's wishlist items
-    // For now, buttons will update when clicked
-    @endauth
 });
+
+// Make addToWishlist globally available
+window.addToWishlist = addToWishlist;
 </script>
 @endpush
 
