@@ -11,6 +11,8 @@ class Testimonial extends Model
 
     protected $fillable = [
         'name',
+        'email',           // Added
+        'user_id',         // Added
         'designation',
         'content',
         'rating',
@@ -25,6 +27,14 @@ class Testimonial extends Model
         'is_approved' => 'boolean',
         'rating' => 'integer'
     ];
+
+    /**
+     * Relationship with User
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * Scope for featured testimonials
@@ -56,6 +66,22 @@ class Testimonial extends Model
     }
 
     /**
+     * Scope for user's testimonials
+     */
+    public function scopeForUser($query, $userId = null, $email = null)
+    {
+        if ($userId) {
+            return $query->where('user_id', $userId);
+        }
+        
+        if ($email) {
+            return $query->where('email', $email);
+        }
+        
+        return $query;
+    }
+
+    /**
      * Get star rating as HTML
      */
     public function getStarsAttribute()
@@ -69,5 +95,19 @@ class Testimonial extends Model
             }
         }
         return $stars;
+    }
+
+    /**
+     * Get status badge
+     */
+    public function getStatusBadgeAttribute()
+    {
+        if ($this->is_approved && $this->is_featured) {
+            return '<span class="badge bg-success">Featured</span>';
+        } elseif ($this->is_approved) {
+            return '<span class="badge bg-primary">Approved</span>';
+        } else {
+            return '<span class="badge bg-warning">Pending Review</span>';
+        }
     }
 }

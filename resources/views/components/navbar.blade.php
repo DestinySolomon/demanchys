@@ -63,6 +63,7 @@
         border: 1px solid rgba(255,255,255,0.12);
         color: white;
         transition: all 0.3s;
+        position: relative; /* ensure badge positions relative to the icon on mobile */
     }
 
     .mobile-icon:hover {
@@ -88,6 +89,17 @@
         background: rgba(255,255,255,0.06);
         color: #ffc107;
         border-color: #ffc107;
+    }
+
+    /* Tweak badge placement on small screens so it hugs the icon */
+    @media (max-width: 576px) {
+        .badge-count {
+            top: -6px;
+            right: -6px;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+        }
     }
 
     .user-dropdown-toggle {
@@ -178,15 +190,26 @@
                 <!-- Heart Icon (Mobile) -->
                 <a href="{{ route('user.wishlist') }}" class="mobile-icon" title="Wishlist">
                     <i class="bi bi-heart"></i>
+                    @php
+                        $wishlistCount = auth()->check() ? \App\Models\Wishlist::where('user_id', auth()->id())->count() : 0;
+                    @endphp
                     @if($wishlistCount > 0)
                         <span class="badge-count">{{ $wishlistCount }}</span>
                     @endif
                 </a>
                 
                 <!-- Cart Icon (Mobile) -->
-                <a href="{{ route('cart') }}" class="mobile-icon" title="Cart">
+                <a href="{{ route('user.cart') }}" class="mobile-icon" title="Cart">
                     <i class="bi bi-cart3"></i>
-                    @php $cart = session()->get('cart', []); $cartCount = array_sum(array_column($cart, 'quantity')) ?? 0; @endphp
+                    @php
+                        $cartCount = 0;
+                        if (auth()->check()) {
+                            $cartCount = \App\Models\CartItem::where('user_id', auth()->id())->sum('quantity');
+                        } else {
+                            $cart = session()->get('cart', []);
+                            $cartCount = $cart ? array_sum(array_column($cart, 'quantity')) : 0;
+                        }
+                    @endphp
                     @if($cartCount > 0)
                         <span class="badge-count">{{ $cartCount }}</span>
                     @endif
@@ -231,6 +254,12 @@
         <!-- User Icons Right (Desktop only) -->
         <div class="user-nav-icons d-none d-lg-flex">
             @auth
+                @php
+                    // Calculate counts for both wishlist and cart
+                    $wishlistCount = \App\Models\Wishlist::where('user_id', auth()->id())->count();
+                    $cartCount = \App\Models\CartItem::where('user_id', auth()->id())->sum('quantity');
+                @endphp
+                
                 <!-- Desktop: Heart, Cart, User Dropdown -->
                 <div class="d-flex align-items-center gap-3">
                     <!-- Wishlist Icon -->
@@ -242,9 +271,8 @@
                     </a>
                     
                     <!-- Cart Icon -->
-                    <a href="{{ route('cart') }}" class="nav-icon-btn" title="Cart">
+                    <a href="{{ route('user.cart') }}" class="nav-icon-btn" title="Cart">
                         <i class="bi bi-cart3"></i>
-                        @php $cart = session()->get('cart', []); $cartCount = array_sum(array_column($cart, 'quantity')) ?? 0; @endphp
                         @if($cartCount > 0)
                             <span class="badge-count">{{ $cartCount }}</span>
                         @endif
@@ -290,6 +318,14 @@
                                     <i class="bi bi-star"></i> My Reviews
                                 </a>
                             </li>
+                            <li>
+                                <a href="{{ route('user.cart') }}" class="user-dropdown-item">
+                                    <i class="bi bi-cart3"></i> My Cart
+                                    @if($cartCount > 0)
+                                        <span class="badge bg-warning ms-auto">{{ $cartCount }}</span>
+                                    @endif
+                                </a>
+                            </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
@@ -304,6 +340,20 @@
                 </div>
             @else
                 <!-- Guest buttons (Desktop only) -->
+                @php
+                    // For guests, check session cart
+                    $cart = session()->get('cart', []);
+                    $guestCartCount = $cart ? array_sum(array_column($cart, 'quantity')) : 0;
+                @endphp
+                
+                <!-- Cart Icon for Guests -->
+                @if($guestCartCount > 0)
+                    <a href="{{ route('user.cart') }}" class="nav-icon-btn" title="Cart">
+                        <i class="bi bi-cart3"></i>
+                        <span class="badge-count">{{ $guestCartCount }}</span>
+                    </a>
+                @endif
+                
                 <a href="{{ route('login') }}" class="btn btn-outline-light me-2">Login</a>
                 <a href="{{ route('register') }}" class="btn btn-warning">Sign Up</a>
             @endauth
@@ -340,6 +390,22 @@
                         <a class="nav-link text-white" href="{{ route('user.dashboard') }}">Dashboard</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ route('user.wishlist') }}">
+                            Wishlist
+                            @if($wishlistCount > 0)
+                                <span class="badge bg-warning ms-2">{{ $wishlistCount }}</span>
+                            @endif
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ route('user.cart') }}">
+                            Cart
+                            @if($cartCount > 0)
+                                <span class="badge bg-warning ms-2">{{ $cartCount }}</span>
+                            @endif
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-white" href="{{ route('user.edit-profile') }}">Edit Profile</a>
                     </li>
                     <li class="nav-item">
@@ -361,3 +427,40 @@
         </div>
     </div>
 </nav>
+
+@push('scripts')
+<script>
+    // Update cart count dynamically when cart changes
+    function updateCartCount(count) {
+        // Update all cart icons
+        document.querySelectorAll('[href*="cart"]').forEach(cartLink => {
+            let badge = cartLink.querySelector('.badge-count');
+            if (count > 0) {
+                if (badge) {
+                    badge.textContent = count;
+                } else {
+                    badge = document.createElement('span');
+                    badge.className = 'badge-count';
+                    badge.textContent = count;
+                    cartLink.appendChild(badge);
+                }
+            } else if (badge) {
+                badge.remove();
+            }
+        });
+    }
+
+    // Listen for cart updates from other pages
+    document.addEventListener('cartUpdated', function(e) {
+        if (e.detail && e.detail.count !== undefined) {
+            updateCartCount(e.detail.count);
+        }
+    });
+
+    // Dispatch event when cart is updated (for other pages to listen to)
+    function dispatchCartUpdate(count) {
+        const event = new CustomEvent('cartUpdated', { detail: { count: count } });
+        document.dispatchEvent(event);
+    }
+</script>
+@endpush

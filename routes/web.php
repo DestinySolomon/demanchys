@@ -53,9 +53,32 @@ Route::delete('/wishlist/clear', [UserDashboardController::class, 'clearWishlist
 
 
 
+
+
+// Checkout Routes (public - allow guests and authenticated users)
+Route::get('/checkout', [UserDashboardController::class, 'checkout'])->name('checkout');
+Route::post('/checkout/process', [UserDashboardController::class, 'processCheckout'])->name('checkout.process');
+Route::post('/checkout/verify-payment', [UserDashboardController::class, 'verifyPayment'])->name('checkout.verify-payment');
+Route::get('/checkout/success', [UserDashboardController::class, 'checkoutSuccess'])->name('checkout.success');
+Route::get('/checkout/cancel', [UserDashboardController::class, 'checkoutCancel'])->name('checkout.cancel');
+
+
+// Cart Routes
+Route::get('/cart', [UserDashboardController::class, 'viewCart'])->name('cart');
+Route::post('/cart/add', [UserDashboardController::class, 'addToCart'])->name('cart.add');
+Route::post('/cart/update', [UserDashboardController::class, 'updateCart'])->name('cart.update');
+Route::post('/cart/remove', [UserDashboardController::class, 'removeFromCart'])->name('cart.remove');
+Route::post('/cart/clear', [UserDashboardController::class, 'clearCart'])->name('cart.clear');
+Route::post('/cart/apply-coupon', [UserDashboardController::class, 'applyCoupon'])->name('cart.apply-coupon');
+Route::post('/cart/remove-coupon', [UserDashboardController::class, 'removeCoupon'])->name('cart.remove-coupon');
+Route::post('/cart/sync', [UserDashboardController::class, 'syncGuestCart'])->name('cart.sync');
+
     // Reviews
     Route::get('/reviews', [UserDashboardController::class, 'reviews'])->name('reviews');
-    
+    // Testimonial/Review routes
+Route::post('/reviews', [UserDashboardController::class, 'storeTestimonial'])->name('reviews.store');
+
+
     // Change Password
     Route::get('/change-password', [UserDashboardController::class, 'changePassword'])->name('change-password');
     Route::post('/update-password', [UserDashboardController::class, 'updatePassword'])->name('update-password');
@@ -84,6 +107,8 @@ Route::get('/cart', [UserDashboardController::class, 'cart'])->name('cart')->mid
 // Profile Routes
 
 Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+
+
 
 // HOMEPAGE - Only one route for home
 Route::get('/', [HomeController::class, 'home'])->name('home');
@@ -304,3 +329,13 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 // Google OAuth Routes
 Route::get('/auth/google', [App\Http\Controllers\Auth\GoogleController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('/auth/google/callback', [App\Http\Controllers\Auth\GoogleController::class, 'handleGoogleCallback'])->name('google.callback');
+
+
+// Legal Pages
+Route::get('/terms', function () {
+    return view('pages.terms');
+})->name('terms');
+
+Route::get('/privacy', function () {
+    return view('pages.privacy');
+})->name('privacy');

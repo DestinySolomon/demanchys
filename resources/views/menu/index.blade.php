@@ -571,8 +571,6 @@
 </div>
 
 @push('scripts')
-
-<script>
 // Wait for jQuery to be ready
 $(document).ready(function() {
     console.log('jQuery loaded and ready');
@@ -674,6 +672,19 @@ document.addEventListener('DOMContentLoaded', function () {
     function parsePrice(display) {
         if (!display) return 0;
         return Number(String(display).replace(/[^0-9.]/g, '') || 0);
+    }
+
+    // ============================================
+    // ADDED: Delivery Type Mapping Function
+    // ============================================
+    function mapDeliveryType(displayType) {
+        const mapping = {
+            'Eat In': 'eat_in',
+            'Takeaway': 'takeaway',
+            'Home Delivery': 'home_delivery',
+            'Drink In': 'eat_in' // Drink In maps to eat_in
+        };
+        return mapping[displayType] || 'eat_in';
     }
 
     // universal fetch endpoint for item data
@@ -1008,10 +1019,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ---------------------------
-    // Modal Complete buttons
+    // Modal Complete buttons - UPDATED VERSION
     // ---------------------------
     
-    // Complete (POST to /checkout)
     document.querySelectorAll('.modal-complete-btn').forEach(b => {
         b.addEventListener('click', () => {
             const visible = document.querySelector('.modal.show');
@@ -1032,137 +1042,161 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // build order payload depending on visible modal
+            // ============================================
+            // UPDATED: Build order payload with mapped delivery type
+            // ============================================
             let payload = {
-                item_name: '',
-                qty: 1,
-                total_display: '',
-                total_amount: 0,
+                menu_item_id: null,
+                quantity: 1,
+                delivery_type: mapDeliveryType(deliveryType), // Use mapped delivery type
                 addons: [],
                 preferences: [],
-                category: '',
-                delivery_type: deliveryType
+                special_instructions: ''
             };
 
             if (visible.id === 'modalDrinks') {
-                const name = document.getElementById('drinksItemName').textContent;
-                const qty = Number(document.getElementById('drinksQtyInput').value || 1);
-                const totalDisplay = document.getElementById('drinksTotalPrice').textContent;
-                const totalAmt = parsePrice(totalDisplay);
-
-                payload.item_name = name;
-                payload.qty = qty;
-                payload.total_display = totalDisplay;
-                payload.total_amount = totalAmt;
-                payload.addons = [];
+                payload.menu_item_id = window._drinks?.id;
+                payload.quantity = Number(document.getElementById('drinksQtyInput').value || 1);
                 
                 // Drink preferences
-                if (document.getElementById('drinksPrefLessIce') && document.getElementById('drinksPrefLessIce').checked) 
+                if (document.getElementById('drinksPrefLessIce')?.checked) 
                     payload.preferences.push('Less ice');
-                if (document.getElementById('drinksPrefNoIce') && document.getElementById('drinksPrefNoIce').checked) 
+                if (document.getElementById('drinksPrefNoIce')?.checked) 
                     payload.preferences.push('No ice');
-                if (document.getElementById('drinksPrefExtraLemon') && document.getElementById('drinksPrefExtraLemon').checked) 
+                if (document.getElementById('drinksPrefExtraLemon')?.checked) 
                     payload.preferences.push('Extra lemon');
-                
-                payload.category = (window._drinks && window._drinks.category) || 'drinks';
 
             } else if (visible.id === 'modalGrill') {
-                const name = document.getElementById('grillItemName').textContent;
-                const qty = Number(document.getElementById('grillQtyInput').value || 1);
-                const totalDisplay = document.getElementById('grillTotalPrice').textContent;
-                const totalAmt = parsePrice(totalDisplay);
-
-                payload.item_name = name;
-                payload.qty = qty;
-                payload.total_display = totalDisplay;
-                payload.total_amount = totalAmt;
-                payload.addons = [];
+                payload.menu_item_id = window._grill?.id;
+                payload.quantity = Number(document.getElementById('grillQtyInput').value || 1);
                 
                 // Grill addons
                 document.querySelectorAll('#grillAddonsList .addon-qty').forEach(i => {
                     const q = Number(i.value || 0);
                     if (q > 0) {
-                        const id = i.dataset.id;
-                        const price = Number(i.dataset.price || 0);
-                        const nameA = i.closest('.addon-row').querySelector('.addon-name').textContent.trim();
-                        payload.addons.push({id, name: nameA, qty: q, price: price});
+                        payload.addons.push({
+                            id: i.dataset.id,
+                            quantity: q,
+                            name: i.closest('.addon-row').querySelector('.addon-name').textContent.trim(),
+                            price: Number(i.dataset.price || 0)
+                        });
                     }
                 });
                 
                 // Grill preferences
-                if (document.getElementById('grillPrefNoOnion') && document.getElementById('grillPrefNoOnion').checked) 
+                if (document.getElementById('grillPrefNoOnion')?.checked) 
                     payload.preferences.push('No onion');
-                if (document.getElementById('grillPrefNoVeg') && document.getElementById('grillPrefNoVeg').checked) 
+                if (document.getElementById('grillPrefNoVeg')?.checked) 
                     payload.preferences.push('No vegetables');
-                if (document.getElementById('grillPrefWellDone') && document.getElementById('grillPrefWellDone').checked) 
+                if (document.getElementById('grillPrefWellDone')?.checked) 
                     payload.preferences.push('Well done');
-                if (document.getElementById('grillPrefExtraSauce') && document.getElementById('grillPrefExtraSauce').checked) 
+                if (document.getElementById('grillPrefExtraSauce')?.checked) 
                     payload.preferences.push('Extra sauce');
-                
-                payload.category = (window._grill && window._grill.category) || 'grill';
 
             } else {
-                // cuisine
-                const name = document.getElementById('cuisineItemName').textContent;
-                const qty = Number(document.getElementById('cuisineQtyInput').value || 1);
-                const totalDisplay = document.getElementById('cuisineTotalPrice').textContent;
-                const totalAmt = parsePrice(totalDisplay);
-
-                payload.item_name = name;
-                payload.qty = qty;
-                payload.total_display = totalDisplay;
-                payload.total_amount = totalAmt;
-                payload.addons = [];
+                // Cuisine
+                payload.menu_item_id = window._cuisine?.id;
+                payload.quantity = Number(document.getElementById('cuisineQtyInput').value || 1);
                 
                 // Cuisine addons
                 document.querySelectorAll('#cuisineAddonsList .addon-qty').forEach(i => {
                     const q = Number(i.value || 0);
                     if (q > 0) {
-                        const id = i.dataset.id;
-                        const price = Number(i.dataset.price || 0);
-                        const nameA = i.closest('.addon-row').querySelector('.addon-name').textContent.trim();
-                        payload.addons.push({id, name: nameA, qty: q, price: price});
+                        payload.addons.push({
+                            id: i.dataset.id,
+                            quantity: q,
+                            name: i.closest('.addon-row').querySelector('.addon-name').textContent.trim(),
+                            price: Number(i.dataset.price || 0)
+                        });
                     }
                 });
                 
                 // Cuisine preferences
-                if (document.getElementById('cuisinePrefNoOnion') && document.getElementById('cuisinePrefNoOnion').checked) 
+                if (document.getElementById('cuisinePrefNoOnion')?.checked) 
                     payload.preferences.push('No onion');
-                if (document.getElementById('cuisinePrefNoCrayfish') && document.getElementById('cuisinePrefNoCrayfish').checked) 
+                if (document.getElementById('cuisinePrefNoCrayfish')?.checked) 
                     payload.preferences.push('No crayfish');
-                if (document.getElementById('cuisinePrefExtraSpicy') && document.getElementById('cuisinePrefExtraSpicy').checked) 
+                if (document.getElementById('cuisinePrefExtraSpicy')?.checked) 
                     payload.preferences.push('Extra spicy');
-                
-                payload.category = (window._cuisine && window._cuisine.category) || 'cuisine';
             }
 
-            // create and submit form to /checkout with CSRF token
-            const csrf = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/checkout';
-
-            // hidden inputs
-            function addInput(name, value) {
-                const i = document.createElement('input');
-                i.type = 'hidden';
-                i.name = name;
-                i.value = (typeof value === 'string') ? value : JSON.stringify(value);
-                form.appendChild(i);
+            if (!payload.menu_item_id) {
+                alert('Item not found. Please try again.');
+                return;
             }
 
-            addInput('_token', csrf);
-            addInput('item_name', payload.item_name);
-            addInput('qty', payload.qty);
-            addInput('total_display', payload.total_display);
-            addInput('total_amount', payload.total_amount);
-            addInput('addons', payload.addons);
-            addInput('preferences', payload.preferences);
-            addInput('category', payload.category);
-            addInput('delivery_type', payload.delivery_type);
+            // Build special instructions from preferences
+            payload.special_instructions = [
+                deliveryType, // Keep original display type for instructions
+                ...payload.preferences,
+                ...payload.addons.map(a => `${a.quantity}x ${a.name}`)
+            ].join(', ');
 
-            document.body.appendChild(form);
-            form.submit();
+            // Get CSRF token
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+            // Show loading
+            b.disabled = true;
+            b.innerHTML = '<i class="bi bi-arrow-clockwise" style="animation: spin 1s linear infinite;"></i> Adding to cart...';
+
+            // Add spin animation
+            if (!document.getElementById('spin-animation')) {
+                const style = document.createElement('style');
+                style.id = 'spin-animation';
+                style.textContent = `
+                    @keyframes spin {
+                        from { transform: rotate(0deg); }
+                        to { transform: rotate(360deg); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Add to cart first using AJAX
+            fetch('/my-account/cart/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(visible);
+                    if (modal) modal.hide();
+                    
+                    // Show success message
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: 'Added to Cart!',
+                            text: 'Redirecting to checkout...',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Redirect to checkout
+                            window.location.href = '/my-account/checkout';
+                        });
+                    } else {
+                        alert('Added to cart!');
+                        window.location.href = '/my-account/checkout';
+                    }
+                } else {
+                    alert(data.message || 'Failed to add to cart');
+                    b.disabled = false;
+                    b.innerHTML = 'Complete Order';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+                b.disabled = false;
+                b.innerHTML = 'Complete Order';
+            });
         });
     });
 
